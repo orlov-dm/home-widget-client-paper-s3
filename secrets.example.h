@@ -1,0 +1,4 @@
+#define SECRET_WIFI_SSID "My_Secret_Network"
+#define SECRET_WIFI_PASS "My_Super_Secure_Password"
+#define SECRET_API_KEY "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+#define SECRET_API_URL "https://api-url.dev/api"
