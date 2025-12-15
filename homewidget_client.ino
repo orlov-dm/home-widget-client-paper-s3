@@ -1,5 +1,4 @@
 #include <M5Unified.h>
-#include "wifi.h"
 
 // Note: No need to include M5GFX.h separately or create 'M5GFX display;'
 // We will use M5.Display which is already configured for the PaperS3.
