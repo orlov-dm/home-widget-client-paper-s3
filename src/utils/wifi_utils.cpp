@@ -1,9 +1,9 @@
 #include <WiFi.h>
 #include "wifi_utils.h"
-#include "secrets.h"
+#include "../secrets.h"
 
-
-boolean isWifiConnected() {
+boolean isWifiConnected()
+{
   return WiFi.status() == WL_CONNECTED;
 }
 

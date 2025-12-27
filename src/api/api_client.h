@@ -3,7 +3,7 @@
 #define API_CLIENT_H
 
 #include "base_request.h"
-#include "secrets.h"
+#include "../secrets.h"
 #include <HTTPClient.h>
 #include <WiFi.h>
 
