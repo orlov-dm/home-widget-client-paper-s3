@@ -1,13 +1,23 @@
+#include "api_client.h"
+#include "get_transport_request.h"
+#include "get_transport_response.h"
+#include "wifi_utils.h"
+#include "datetime.h"
 #include <M5Unified.h>
 
-// Note: No need to include M5GFX.h separately or create 'M5GFX display;'
-// We will use M5.Display which is already configured for the PaperS3.
+
 
 // ---------- UI ELEMENT STRUCT ----------
 struct Button {
   int x, y, w, h;
-  const char* label;
+  const char *label;
   bool pressed = false;
+  bool dirty = true; // New flag: only redraw if this is true
+};
+
+struct Label {
+  int x, y, w, h;
+  const char *value;
   bool dirty = true; // New flag: only redraw if this is true
 };
 
@@ -18,10 +28,13 @@ Button btnB = {20, 140, 200, 60, "Button B"};
 String statusText = "Touch a button";
 bool textDirty = true; // Track if text needs redrawing
 
+ApiClient client;
+
 // ---------- DRAWING FUNCTIONS ----------
-void drawButton(Button& b) {
+void drawButton(Button &b) {
   // Only draw if the state actually changed
-  if (!b.dirty) return;
+  if (!b.dirty)
+    return;
 
   uint16_t bg = b.pressed ? TFT_BLACK : TFT_WHITE;
   uint16_t fg = b.pressed ? TFT_WHITE : TFT_BLACK;
@@ -43,52 +56,84 @@ void drawButton(Button& b) {
   b.dirty = false; // Reset dirty flag
 }
 
-void drawLabel() {
-  if (!textDirty) return;
+void drawStatus() {
+  if (!textDirty)
+    return;
 
   // Clear ONLY the text area, not the whole screen
   M5.Display.fillRect(0, 0, 300, 40, TFT_WHITE);
-  
+
   M5.Display.setTextColor(TFT_BLACK);
   M5.Display.setTextSize(2);
   M5.Display.setCursor(10, 15);
   M5.Display.print(statusText);
-  
+
   textDirty = false;
 }
 
+void drawLabel(Label &l) {
+  if (!l.dirty)
+    return;
+
+
+  // Draw ONLY the button area
+  M5.Display.fillRect(l.x, l.y, l.w, l.h, TFT_WHITE);
+
+  M5.Display.setTextColor(TFT_BLACK);
+  M5.Display.setTextSize(2);
+  M5.Display.setCursor(l.x + 10, l.y + 15);
+  M5.Display.print(l.value);
+
+  l.dirty = false; // Reset dirty flag
+}
+
 void drawUI() {
-  // We do NOT call fillScreen here. 
+  // We do NOT call fillScreen here.
   // We rely on the specific draw functions to clear their own areas.
-  
+
   M5.Display.startWrite(); // Start transaction for smoother update
-  drawLabel();
+  drawStatus();
   drawButton(btnA);
   drawButton(btnB);
   M5.Display.endWrite(); // Commit the transaction
 }
 
 // ---------- TOUCH LOGIC ----------
-bool isTouched(Button& b, int x, int y) {
-  return (x > b.x && x < b.x + b.w &&
-          y > b.y && y < b.y + b.h);
+bool isTouched(Button &b, int x, int y) {
+  return (x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h);
 }
 
 // ---------- SETUP ----------
 void setup() {
+  Serial.begin(9600);
+  // while (!Serial)
+  //   ;
+  Serial.println("BOOT");
+
   auto cfg = M5.config();
   M5.begin(cfg);
 
   // CRITICAL E-INK SETTINGS
   M5.Display.begin();
-  
+
   // Set update mode to FAST (Low quality, but fast and no flash)
   // Options: epd_quality (slow/clean), epd_fast (fast/ghosting), epd_fastest
-  M5.Display.setEpdMode(epd_mode_t::epd_fast); 
+  M5.Display.setEpdMode(epd_mode_t::epd_fast);
 
   M5.Display.fillScreen(TFT_WHITE); // Clear screen once at startup
   M5.Display.setTextSize(2);
-  
+
+  // Initialize WiFi BEFORE making any HTTP requests
+  Serial.println("Connecting to WiFi...");
+  WifiConnectionStatus wifiStatus = wifiConnect();
+  if (wifiStatus == CONNECTED) {
+    Serial.println("WiFi connected!");
+    statusText = "WiFi connected";
+  } else {
+    Serial.println("WiFi connection failed!");
+    statusText = "WiFi failed";
+  }
+
   // Force initial draw
   drawUI();
 }
@@ -104,7 +149,66 @@ void loop() {
     if (isTouched(btnA, t.x, t.y)) {
       btnA.pressed = true;
       btnA.dirty = true;
-      statusText = "Button A pressed";
+
+
+      // Check WiFi connection before making request
+      if (!isWifiConnected()) {
+        Serial.println("WiFi not connected, attempting reconnect...");
+        WifiConnectionStatus wifiStatus = wifiConnect();
+        if (wifiStatus != CONNECTED) {
+          Serial.println("Failed to reconnect WiFi");
+          statusText = "WiFi error";
+          textDirty = true;
+          uiChanged = true;
+          btnA.pressed = false;
+          btnA.dirty = true;
+          if (uiChanged) {
+            drawUI();
+          }
+          return;
+        }
+      }
+
+      GetTransportRequest request;
+      GetTransportResponse *response =
+          client.doRequest<GetTransportResponse>(&request);
+
+      if (response && response->isSuccess()) {
+        TransportTime *times = response->getTransportTimes();
+        int count = response->getTransportTimesCount();
+
+        int startX = 20;
+        int startY = 220; 
+        int labelHeight = 40;
+        int labelWidth = 300;
+
+        M5.Display.fillRect(startX, startY, M5.Display.width() - startX , M5.Display.height() - startY, TFT_WHITE);
+
+        for (int i = 0; i < count; i++) {        
+          char timeString[DATETIME_SIZE];         
+          timestampToDatetime(timeString, times[i].expectedArriveTimestamp);
+          Label timeLabel = {startX, startY + labelHeight * i, labelWidth, labelHeight, timeString};
+          drawLabel(timeLabel);
+
+          char str[3];
+          itoa( times[i].route, str, 10 );
+          Label routeLabel = {startX + labelWidth + 20, startY + labelHeight * i, labelWidth, labelHeight, str}; //String(times[i].route).c_str()
+          drawLabel(routeLabel);
+
+          Serial.println(timeString);
+          Serial.print("Route: ");
+          Serial.println(times[i].route);
+          Serial.print("Type: ");
+          Serial.println(times[i].transportType);
+          Serial.print("Expected Arrive Timestamp: ");
+          Serial.println(times[i].expectedArriveTimestamp);
+          Serial.print("Scheduled Arrive Timestamp: ");
+          Serial.println(times[i].scheduledArriveTimestamp);          
+        }
+
+        delete response;
+      }
+
       textDirty = true;
       uiChanged = true;
     }

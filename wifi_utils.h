@@ -3,7 +3,14 @@
 
 #include <Arduino.h>
 
-void wifiConnect();
+enum WifiConnectionStatus
+{
+  CONNECTED,
+  FAILED
+};
+
+boolean isWifiConnected();
+WifiConnectionStatus wifiConnect();
 void wifiDisconnect();
 
 #endif

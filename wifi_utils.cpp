@@ -2,11 +2,10 @@
 #include "wifi_utils.h"
 #include "secrets.h"
 
-enum WifiConnectionStatus
-{
-  CONNECTED,
-  FAILED
-};
+
+boolean isWifiConnected() {
+  return WiFi.status() == WL_CONNECTED;
+}
 
 WifiConnectionStatus wifiConnect()
 {

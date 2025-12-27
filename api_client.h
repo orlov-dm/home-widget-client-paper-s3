@@ -1,0 +1,64 @@
+// api_client.h
+#ifndef API_CLIENT_H
+#define API_CLIENT_H
+
+#include "base_request.h"
+#include "secrets.h"
+#include <HTTPClient.h>
+#include <WiFi.h>
+
+class ApiClient {
+public:
+  template <typename TResponse> TResponse *doRequest(BaseRequest *request) {
+    if (!request) {
+      return nullptr;
+    }
+
+    // Check WiFi connection before attempting request
+    if (WiFi.status() != WL_CONNECTED) {
+      Serial.println("Error: WiFi not connected");
+      return nullptr;
+    }
+
+    // Start connection
+    Serial.println(request->getUrl() + " start");
+    String fullUrl = SECRET_API_URL + request->getUrl();
+    this->http.begin(fullUrl);
+    this->http.addHeader("Content-Type", "application/json");
+    this->http.addHeader("x-api-key", SECRET_API_KEY);
+    this->http.addHeader("CF-Access-Client-Id", SECRET_CF_ACCESS_CLIENT_ID);
+    this->http.addHeader("CF-Access-Client-Secret",
+                         SECRET_CF_ACCESS_CLIENT_VALUE);
+
+    // Send GET/POST Request
+    String method = request->getMethod();
+    int httpResponseCode = 0;
+    if (method == "POST") {
+      String jsonPayload = request->getBody();
+      httpResponseCode = this->http.POST(jsonPayload);
+    } else {
+      httpResponseCode = this->http.GET();
+    }
+
+    // Handle Response
+    TResponse *result = nullptr;
+    if (httpResponseCode > 0) {
+      String response = this->http.getString();
+      Serial.println(response);
+      result = new TResponse(httpResponseCode, response);
+    } else {
+      Serial.print("Error: ");
+      Serial.println(httpResponseCode);
+    }
+
+    // Close connection
+    this->http.end();
+
+    return result;
+  }
+
+private:
+  HTTPClient http;
+};
+
+#endif
