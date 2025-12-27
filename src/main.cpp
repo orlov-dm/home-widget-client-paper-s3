@@ -5,25 +5,25 @@
 #include "datetime.h"
 #include <M5Unified.h>
 
-
-
 // ---------- UI ELEMENT STRUCT ----------
-struct Button {
+struct Button
+{
   int x, y, w, h;
   const char *label;
   bool pressed = false;
   bool dirty = true; // New flag: only redraw if this is true
 };
 
-struct Label {
+struct Label
+{
   int x, y, w, h;
   const char *value;
   bool dirty = true; // New flag: only redraw if this is true
 };
 
 // ---------- UI ELEMENTS ----------
-Button btnA = {20, 60, 200, 60, "Button A"};
-Button btnB = {20, 140, 200, 60, "Button B"};
+Button btnA;
+Button btnB;
 
 String statusText = "Touch a button";
 bool textDirty = true; // Track if text needs redrawing
@@ -31,7 +31,8 @@ bool textDirty = true; // Track if text needs redrawing
 ApiClient client;
 
 // ---------- DRAWING FUNCTIONS ----------
-void drawButton(Button &b) {
+void drawButton(Button &b)
+{
   // Only draw if the state actually changed
   if (!b.dirty)
     return;
@@ -56,7 +57,8 @@ void drawButton(Button &b) {
   b.dirty = false; // Reset dirty flag
 }
 
-void drawStatus() {
+void drawStatus()
+{
   if (!textDirty)
     return;
 
@@ -71,10 +73,10 @@ void drawStatus() {
   textDirty = false;
 }
 
-void drawLabel(Label &l) {
+void drawLabel(Label &l)
+{
   if (!l.dirty)
     return;
-
 
   // Draw ONLY the button area
   M5.Display.fillRect(l.x, l.y, l.w, l.h, TFT_WHITE);
@@ -87,7 +89,8 @@ void drawLabel(Label &l) {
   l.dirty = false; // Reset dirty flag
 }
 
-void drawUI() {
+void drawUI()
+{
   // We do NOT call fillScreen here.
   // We rely on the specific draw functions to clear their own areas.
 
@@ -99,16 +102,31 @@ void drawUI() {
 }
 
 // ---------- TOUCH LOGIC ----------
-bool isTouched(Button &b, int x, int y) {
+bool isTouched(Button &b, int x, int y)
+{
   return (x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h);
 }
 
 // ---------- SETUP ----------
-void setup() {
+void setup()
+{
   Serial.begin(9600);
   // while (!Serial)
   //   ;
   Serial.println("BOOT");
+
+  // Initialize buttons
+  btnA.x = 20;
+  btnA.y = 60;
+  btnA.w = 200;
+  btnA.h = 60;
+  btnA.label = "Button A";
+
+  btnB.x = 20;
+  btnB.y = 140;
+  btnB.w = 200;
+  btnB.h = 60;
+  btnB.label = "Button B";
 
   auto cfg = M5.config();
   M5.begin(cfg);
@@ -126,10 +144,13 @@ void setup() {
   // Initialize WiFi BEFORE making any HTTP requests
   Serial.println("Connecting to WiFi...");
   WifiConnectionStatus wifiStatus = wifiConnect();
-  if (wifiStatus == CONNECTED) {
+  if (wifiStatus == CONNECTED)
+  {
     Serial.println("WiFi connected!");
     statusText = "WiFi connected";
-  } else {
+  }
+  else
+  {
     Serial.println("WiFi connection failed!");
     statusText = "WiFi failed";
   }
@@ -139,30 +160,35 @@ void setup() {
 }
 
 // ---------- LOOP ----------
-void loop() {
+void loop()
+{
   M5.update();
 
   auto t = M5.Touch.getDetail();
   bool uiChanged = false;
 
-  if (t.wasPressed()) {
-    if (isTouched(btnA, t.x, t.y)) {
+  if (t.wasPressed())
+  {
+    if (isTouched(btnA, t.x, t.y))
+    {
       btnA.pressed = true;
       btnA.dirty = true;
 
-
       // Check WiFi connection before making request
-      if (!isWifiConnected()) {
+      if (!isWifiConnected())
+      {
         Serial.println("WiFi not connected, attempting reconnect...");
         WifiConnectionStatus wifiStatus = wifiConnect();
-        if (wifiStatus != CONNECTED) {
+        if (wifiStatus != CONNECTED)
+        {
           Serial.println("Failed to reconnect WiFi");
           statusText = "WiFi error";
           textDirty = true;
           uiChanged = true;
           btnA.pressed = false;
           btnA.dirty = true;
-          if (uiChanged) {
+          if (uiChanged)
+          {
             drawUI();
           }
           return;
@@ -173,26 +199,39 @@ void loop() {
       GetTransportResponse *response =
           client.doRequest<GetTransportResponse>(&request);
 
-      if (response && response->isSuccess()) {
+      if (response && response->isSuccess())
+      {
         TransportTime *times = response->getTransportTimes();
         int count = response->getTransportTimesCount();
 
         int startX = 20;
-        int startY = 220; 
+        int startY = 220;
         int labelHeight = 40;
         int labelWidth = 300;
 
-        M5.Display.fillRect(startX, startY, M5.Display.width() - startX , M5.Display.height() - startY, TFT_WHITE);
+        M5.Display.startWrite();
+        M5.Display.fillRect(startX, startY, M5.Display.width() - startX, M5.Display.height() - startY, TFT_WHITE);
 
-        for (int i = 0; i < count; i++) {        
-          char timeString[DATETIME_SIZE];         
+        for (int i = 0; i < count; i++)
+        {
+          char timeString[DATETIME_SIZE];
           timestampToDatetime(timeString, times[i].expectedArriveTimestamp);
-          Label timeLabel = {startX, startY + labelHeight * i, labelWidth, labelHeight, timeString};
+          Label timeLabel;
+          timeLabel.x = startX;
+          timeLabel.y = startY + labelHeight * i;
+          timeLabel.w = labelWidth;
+          timeLabel.h = labelHeight;
+          timeLabel.value = timeString;
           drawLabel(timeLabel);
 
           char str[3];
-          itoa( times[i].route, str, 10 );
-          Label routeLabel = {startX + labelWidth + 20, startY + labelHeight * i, labelWidth, labelHeight, str}; //String(times[i].route).c_str()
+          itoa(times[i].route, str, 10);
+          Label routeLabel;
+          routeLabel.x = startX + labelWidth + 20;
+          routeLabel.y = startY + labelHeight * i;
+          routeLabel.w = labelWidth;
+          routeLabel.h = labelHeight;
+          routeLabel.value = str;
           drawLabel(routeLabel);
 
           Serial.println(timeString);
@@ -203,8 +242,9 @@ void loop() {
           Serial.print("Expected Arrive Timestamp: ");
           Serial.println(times[i].expectedArriveTimestamp);
           Serial.print("Scheduled Arrive Timestamp: ");
-          Serial.println(times[i].scheduledArriveTimestamp);          
+          Serial.println(times[i].scheduledArriveTimestamp);
         }
+        M5.Display.endWrite();
 
         delete response;
       }
@@ -212,7 +252,8 @@ void loop() {
       textDirty = true;
       uiChanged = true;
     }
-    if (isTouched(btnB, t.x, t.y)) {
+    if (isTouched(btnB, t.x, t.y))
+    {
       btnB.pressed = true;
       btnB.dirty = true;
       statusText = "Button B pressed";
@@ -221,20 +262,24 @@ void loop() {
     }
   }
 
-  if (t.wasReleased()) {
-    if (btnA.pressed) {
+  if (t.wasReleased())
+  {
+    if (btnA.pressed)
+    {
       btnA.pressed = false;
       btnA.dirty = true;
       uiChanged = true;
     }
-    if (btnB.pressed) {
+    if (btnB.pressed)
+    {
       btnB.pressed = false;
       btnB.dirty = true;
       uiChanged = true;
     }
   }
 
-  if (uiChanged) {
+  if (uiChanged)
+  {
     drawUI();
   }
 
