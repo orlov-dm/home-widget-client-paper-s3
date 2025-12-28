@@ -1,0 +1,33 @@
+#include "button.h"
+#include <M5Unified.h>
+
+void drawButton(Button &b)
+{
+    // Only draw if the state actually changed
+    if (!b.dirty)
+        return;
+
+    uint16_t bg = b.pressed ? TFT_BLACK : TFT_WHITE;
+    uint16_t fg = b.pressed ? TFT_WHITE : TFT_BLACK;
+
+    // Draw ONLY the button area
+    M5.Display.fillRoundRect(b.x, b.y, b.w, b.h, 12, bg);
+    M5.Display.drawRoundRect(b.x, b.y, b.w, b.h, 12, TFT_BLACK);
+
+    M5.Display.setTextColor(fg);
+    M5.Display.setTextSize(2);
+
+    int textWidth = M5.Display.textWidth(b.label);
+    int textX = b.x + (b.w - textWidth) / 2;
+    int textY = b.y + (b.h / 2) - 8;
+
+    M5.Display.setCursor(textX, textY);
+    M5.Display.print(b.label);
+
+    b.dirty = false; // Reset dirty flag
+}
+
+bool isButtonTouched(Button &b, int x, int y)
+{
+    return (x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h);
+}

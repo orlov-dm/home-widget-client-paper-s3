@@ -1,6 +1,6 @@
 src/secrets.h
 
 .vscode
-.pio
+.pio/
 
 build/

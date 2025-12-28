@@ -5,19 +5,27 @@
 #include "base_request.h"
 #include "../secrets.h"
 #include <HTTPClient.h>
-#include <WiFi.h>
+#include "utils/wifi_utils.h"
 
-class ApiClient {
+class ApiClient
+{
 public:
-  template <typename TResponse> TResponse *doRequest(BaseRequest *request) {
-    if (!request) {
+  template <typename TResponse>
+  TResponse *doRequest(BaseRequest *request)
+  {
+    if (!request)
+    {
       return nullptr;
     }
 
-    // Check WiFi connection before attempting request
-    if (WiFi.status() != WL_CONNECTED) {
-      Serial.println("Error: WiFi not connected");
-      return nullptr;
+    if (!isWifiConnected())
+    {
+      auto wifiStatus = wifiConnect();
+      if (wifiStatus != WifiConnectionStatus::CONNECTED)
+      {
+        Serial.println("Error: Failed to reconnect WiFi");
+        return nullptr;
+      }
     }
 
     // Start connection
@@ -33,20 +41,26 @@ public:
     // Send GET/POST Request
     String method = request->getMethod();
     int httpResponseCode = 0;
-    if (method == "POST") {
+    if (method == "POST")
+    {
       String jsonPayload = request->getBody();
       httpResponseCode = this->http.POST(jsonPayload);
-    } else {
+    }
+    else
+    {
       httpResponseCode = this->http.GET();
     }
 
     // Handle Response
     TResponse *result = nullptr;
-    if (httpResponseCode > 0) {
+    if (httpResponseCode > 0)
+    {
       String response = this->http.getString();
       Serial.println(response);
       result = new TResponse(httpResponseCode, response);
-    } else {
+    }
+    else
+    {
       Serial.print("Error: ");
       Serial.println(httpResponseCode);
     }

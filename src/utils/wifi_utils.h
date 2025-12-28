@@ -5,12 +5,14 @@
 
 enum WifiConnectionStatus
 {
+  UNSET,
   CONNECTED,
+  CONNECTING,
   FAILED
 };
 
 boolean isWifiConnected();
-WifiConnectionStatus wifiConnect();
+WifiConnectionStatus wifiConnect(bool needWait = true);
 void wifiDisconnect();
 
 #endif
