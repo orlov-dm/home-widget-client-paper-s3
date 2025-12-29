@@ -172,7 +172,7 @@ void setup()
 
   M5.Display.begin();
 
-  M5.Display.setEpdMode(epd_mode_t::epd_text);
+  M5.Display.setEpdMode(epd_mode_t::epd_fast);
 
   // M5.Display.fillScreen(TFT_WHITE); // Clear screen once at startup
   M5.Display.setTextSize(2);
