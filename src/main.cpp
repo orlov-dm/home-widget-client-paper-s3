@@ -7,6 +7,7 @@
 #include "utils/wifi_utils.h"
 #include "utils/sleep_utils.h"
 #include "utils/datetime_utils.h"
+#include "utils/dev_utils.h"
 #include "ui/components/index.h"
 
 const uint8_t MAX_SCHEDULE_LABELS = 10;
@@ -225,11 +226,23 @@ void loop()
 
   if (millis() - wakeupTime >= AWAKE_DURATION)
   {
-    statusBar->setValue("Auto sleep...");
-    drawUI();
-    delay(1000);
+    bool devMode = isDevMode();
+    Serial.printf("Dev mode check: %s\n", devMode ? "true" : "false");
 
-    goToSleep();
+    if (devMode)
+    {
+      Serial.println("Development mode detected (USB connected) - skipping deep sleep");
+      Serial.println("Device will stay awake for debugging");
+      return;
+    }
+    else
+    {
+      statusBar->setValue("Auto sleep...");
+      drawUI();
+      delay(1000);
+
+      goToSleep();
+    }
   }
 
   auto t = M5.Touch.getDetail();
