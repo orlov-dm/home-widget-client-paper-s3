@@ -1,8 +1,7 @@
 #ifndef UI_COMPONENTS_STATUS_BAR_H
 #define UI_COMPONENTS_STATUS_BAR_H
 
-#include <cstring>
-#include <M5Unified.h>
+#include <Arduino.h>
 #include <M5GFX.h>
 
 class StatusBar
@@ -11,10 +10,10 @@ public:
     StatusBar(M5GFX &display, int x, int y, int w, int h, const char *initialValue)
         : display(display), x(x), y(y), w(w), h(h)
     {
-        strcpy(this->value, initialValue);
+        this->value = String(initialValue);
     }
 
-    void setValue(const char *newValue);
+    void setValue(String newValue);
     void draw();
 
     int getHeight() const
@@ -24,7 +23,7 @@ public:
 
 private:
     int x, y, w, h;
-    char value[255] = "";
+    String value = "";
     bool pressed = false;
     bool dirty = true;
     M5GFX &display;

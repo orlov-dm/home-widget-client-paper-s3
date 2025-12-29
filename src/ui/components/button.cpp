@@ -1,4 +1,5 @@
 #include "button.h"
+
 #include <M5Unified.h>
 
 void drawButton(Button &b)
@@ -17,9 +18,9 @@ void drawButton(Button &b)
     M5.Display.setTextColor(fg);
     M5.Display.setTextSize(2);
 
-    int textWidth = M5.Display.textWidth(b.label);
-    int textX = b.x + (b.w - textWidth) / 2;
-    int textY = b.y + (b.h / 2) - 8;
+    int32_t textWidth = M5.Display.textWidth(b.label);
+    int32_t textX = b.x + (b.w - textWidth) / 2;
+    int32_t textY = b.y + (b.h / 2) - 8;
 
     M5.Display.setCursor(textX, textY);
     M5.Display.print(b.label);
@@ -27,7 +28,7 @@ void drawButton(Button &b)
     b.dirty = false; // Reset dirty flag
 }
 
-bool isButtonTouched(Button &b, int x, int y)
+bool isButtonTouched(Button &b, int32_t x, int32_t y)
 {
     return (x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h);
 }

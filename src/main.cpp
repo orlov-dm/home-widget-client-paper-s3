@@ -1,36 +1,58 @@
+#include <Arduino.h>
+#include <M5Unified.h>
+
 #include "api/api_client.h"
 #include "api/get_transport_request.h"
 #include "api/get_transport_response.h"
 #include "utils/wifi_utils.h"
-#include "utils/datetime.h"
+#include "utils/sleep_utils.h"
+#include "utils/datetime_utils.h"
 #include "ui/components/index.h"
-#include <M5Unified.h>
 
-// ---------- UI ELEMENT STRUCT ----------
-
-// ---------- UI ELEMENTS ----------
+const uint8_t MAX_SCHEDULE_LABELS = 10;
 Button btnRefresh;
 StatusBar *statusBar = nullptr;
 WifiConnectionStatus wifiStatus = WifiConnectionStatus::UNSET;
-
+Label routeLabels[MAX_SCHEDULE_LABELS];
+Label timeLabels[MAX_SCHEDULE_LABELS];
 ApiClient client;
+const uint32_t AWAKE_DURATION = 60000; // 1 minute in milliseconds (how long to stay awake)
+uint32_t wakeupTime = 0;
 
 bool isRequestInProgress = false;
 
-// ---------- DRAWING FUNCTIONS ----------
+void drawLabels()
+{
+  for (int i = 0; i < MAX_SCHEDULE_LABELS; i++)
+  {
+    if (routeLabels[i].value.length() == 0 || timeLabels[i].value.length() == 0)
+    {
+      continue;
+    }
+    drawLabel(routeLabels[i], 3);
+    drawLabel(timeLabels[i]);
+  }
+}
 
 void drawUI()
 {
-  // We do NOT call fillScreen here.
-  // We rely on the specific draw functions to clear their own areas.
-
-  M5.Display.startWrite(); // Start transaction for smoother update
+  M5.Display.startWrite();
   if (statusBar)
   {
     statusBar->draw();
   }
   drawButton(btnRefresh);
-  M5.Display.endWrite(); // Commit the transaction
+  drawLabels();
+  M5.Display.endWrite();
+}
+
+void clearLabels()
+{
+  for (int i = 0; i < MAX_SCHEDULE_LABELS; i++)
+  {
+    routeLabels[i] = Label();
+    timeLabels[i] = Label();
+  }
 }
 
 void requestData()
@@ -72,6 +94,8 @@ void requestData()
   GetTransportResponse *response =
       client.doRequest<GetTransportResponse>(&request);
 
+  clearLabels();
+
   if (response && response->isSuccess())
   {
     TransportTime *times = response->getTransportTimes();
@@ -87,36 +111,25 @@ void requestData()
     time_t utcTime = time(nullptr);
     for (int i = 0; i < countToShow; i++)
     {
-      char str[3];
-      itoa(times[i].route, str, 10);
+      String routeStr = String(times[i].route);
       Label routeLabel;
       routeLabel.x = startX;
       routeLabel.y = startY + labelHeight * i;
       routeLabel.w = 40;
       routeLabel.h = labelHeight;
-      routeLabel.value = str;
-      drawLabel(routeLabel, 3);
+      routeLabel.value = routeStr;
+      routeLabels[i] = routeLabel;
 
       auto expectedArriveTimestamp = times[i].expectedArriveTimestamp;
       int secondsDiff = expectedArriveTimestamp - utcTime;
-      char secondsDiffString[32];
-      snprintf(secondsDiffString, sizeof(secondsDiffString), "In %d min", secondsDiff / 60);
+      String secondsDiffString = "In " + String(secondsDiff / 60) + " min";
       Label timeLabel;
       timeLabel.x = startX + 40 + 10;
       timeLabel.y = startY + labelHeight * i;
       timeLabel.w = labelWidth;
       timeLabel.h = labelHeight;
       timeLabel.value = secondsDiffString;
-      drawLabel(timeLabel);
-
-      Serial.print("Route: ");
-      Serial.println(times[i].route);
-      Serial.print("Type: ");
-      Serial.println(times[i].transportType);
-      Serial.print("Expected Arrive Timestamp: ");
-      Serial.println(times[i].expectedArriveTimestamp);
-      Serial.print("Scheduled Arrive Timestamp: ");
-      Serial.println(times[i].scheduledArriveTimestamp);
+      timeLabels[i] = timeLabel;
     }
     M5.Display.endWrite();
 
@@ -124,8 +137,7 @@ void requestData()
 
     char statusText[255];
     String timeStr = timestampToDatetime(utcTime);
-    snprintf(statusText, sizeof(statusText), "Data refreshed at %s", timeStr.c_str());
-    statusBar->setValue(statusText);
+    statusBar->setValue((String("Data refreshed at ") + timeStr).c_str());
   }
   else
   {
@@ -143,33 +155,73 @@ void setup()
   auto cfg = M5.config();
   M5.begin(cfg);
 
-  // CRITICAL E-INK SETTINGS
+  wakeupTime = millis();
+
   M5.Display.begin();
 
-  // Set update mode to FAST (Low quality, but fast and no flash)
-  // Options: epd_quality (slow/clean), epd_fast (fast/ghosting), epd_fastest
-  M5.Display.setEpdMode(epd_mode_t::epd_fast);
+  M5.Display.setEpdMode(epd_mode_t::epd_text);
 
-  M5.Display.fillScreen(TFT_WHITE); // Clear screen once at startup
+  // M5.Display.fillScreen(TFT_WHITE); // Clear screen once at startup
   M5.Display.setTextSize(2);
 
   statusBar = new StatusBar(
       M5.Display,
       0, 0, M5.Display.width(), 40, "Starting up...");
 
-  // Initialize buttons
   btnRefresh.x = 20;
   btnRefresh.y = statusBar->getHeight() + 20;
   btnRefresh.w = 200;
   btnRefresh.h = 60;
   btnRefresh.label = "Refresh";
 
-  // Initialize WiFi BEFORE making any HTTP requests
-  Serial.println("Connecting to WiFi...");
-  wifiConnect(true);
+  sleepSetup();
 
-  // Configure NTP time synchronization
-  configureTime();
+  // Setup WiFi with error handling
+  WifiConnectionStatus wifiStatus = wifiSetup();
+  if (wifiStatus != WifiConnectionStatus::CONNECTED)
+  {
+    statusBar->setValue("WiFi Failed! Touch to retry");
+    drawUI();
+
+    // Wait for user to touch screen to retry
+    while (wifiStatus != WifiConnectionStatus::CONNECTED)
+    {
+      M5.update();
+      auto t = M5.Touch.getDetail();
+      if (t.wasPressed())
+      {
+        statusBar->setValue("Retrying WiFi...");
+        drawUI();
+        wifiStatus = wifiSetup();
+        if (wifiStatus != WifiConnectionStatus::CONNECTED)
+        {
+          statusBar->setValue("WiFi Failed! Touch to retry");
+          drawUI();
+        }
+      }
+      delay(100);
+    }
+    statusBar->setValue("WiFi Connected!");
+    drawUI();
+  }
+
+  // Setup time with error handling
+  bool timeSuccess = timeSetup();
+  if (!timeSuccess)
+  {
+    statusBar->setValue("Time sync failed! Retrying...");
+    drawUI();
+    delay(2000);
+
+    // Retry time sync once
+    timeSuccess = timeSetup();
+    if (!timeSuccess)
+    {
+      statusBar->setValue("Time sync failed! Data may be inaccurate");
+      drawUI();
+      delay(3000);
+    }
+  }
 
   requestData();
   drawUI();
@@ -180,20 +232,31 @@ void loop()
 {
   M5.update();
 
+  if (millis() - wakeupTime >= AWAKE_DURATION)
+  {
+    statusBar->setValue("Auto sleep...");
+    drawUI();
+    delay(1000);
+
+    goToSleep();
+  }
+
   auto t = M5.Touch.getDetail();
   bool uiChanged = false;
 
   if (t.wasPressed())
   {
+    // Reset awake timer on any touch interaction
+    wakeupTime = millis();
+
     if (isButtonTouched(btnRefresh, t.x, t.y))
     {
       btnRefresh.pressed = true;
       btnRefresh.dirty = true;
-      statusBar->setValue("Button Refresh Pressed");
-      uiChanged = true;
 
-      // configureTime();
       requestData();
+
+      uiChanged = true;
     }
   }
 

@@ -11,6 +11,8 @@ enum WifiConnectionStatus
   FAILED
 };
 
+WifiConnectionStatus wifiSetup();
+
 boolean isWifiConnected();
 WifiConnectionStatus wifiConnect(bool needWait = true);
 void wifiDisconnect();

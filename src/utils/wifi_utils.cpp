@@ -1,8 +1,19 @@
+#include "wifi_utils.h"
+
 #include <WiFi.h>
 #include <time.h>
 #include <TimeLib.h>
-#include "wifi_utils.h"
+
 #include "../secrets.h"
+
+WifiConnectionStatus wifiSetup()
+{
+  Serial.println("Connecting to WiFi...");
+  WiFi.mode(WIFI_STA);
+  WifiConnectionStatus status = wifiConnect(true);
+  Serial.printf("WiFi Status: %d\n", status);
+  return status;
+}
 
 boolean isWifiConnected()
 {

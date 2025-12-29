@@ -1,10 +1,10 @@
 #include "status_bar.h"
 
-void StatusBar::setValue(const char *newValue)
+void StatusBar::setValue(String newValue)
 {
-    if (strcmp(this->value, newValue) != 0)
+    if (this->value != newValue)
     {
-        strcpy(this->value, newValue);
+        this->value = newValue;
         this->dirty = true;
     }
 }
