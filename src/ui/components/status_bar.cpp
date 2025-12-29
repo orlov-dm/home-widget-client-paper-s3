@@ -19,8 +19,7 @@ void StatusBar::draw()
     this->display.fillRect(this->x, this->y, this->w, this->h, TFT_LIGHTGREY);
     this->display.setTextColor(TFT_BLACK);
     this->display.setTextSize(2);
-    this->display.setTextPadding(10);
-    this->display.setCursor(this->x, this->y + (this->h - 16) / 2); // Center vertically
+    this->display.setCursor(this->x + 10, this->y + (this->h - 16) / 2); // Center vertically with padding
     this->display.print(this->value);
     this->dirty = false;
 }
