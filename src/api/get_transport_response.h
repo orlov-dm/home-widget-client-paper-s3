@@ -5,24 +5,29 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-struct TransportTime {
+struct TransportTime
+{
   int route;
   String transportType;
   uint32_t expectedArriveTimestamp;
   uint32_t scheduledArriveTimestamp;
 };
 
-class GetTransportResponse : public BaseResponse {
+class GetTransportResponse : public BaseResponse
+{
 public:
   GetTransportResponse(int statusCode, String responseBody)
-      : BaseResponse(statusCode, responseBody) {
+      : BaseResponse(statusCode, responseBody)
+  {
     // Parse JSON - JsonDocument automatically manages memory in ArduinoJson 7
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, responseBody);
 
-    if (error) {
+    if (error)
+    {
       Serial.print("JSON parsing failed: ");
       Serial.println(error.c_str());
+      this->errorDescription = error.c_str();
       isValid = false;
       success = false;
       return;
@@ -32,20 +37,24 @@ public:
     success = doc["success"] | false;
 
     // Check if data exists
-    if (!doc["data"].is<JsonObject>()) {
+    if (!doc["data"].is<JsonObject>())
+    {
       Serial.println("JSON missing data object");
       isValid = false;
       transportTimesCount = 0;
+      this->errorDescription = "Missing data object";
       return;
     }
 
     JsonObject dataObj = doc["data"].as<JsonObject>();
 
     // Check if stopDepartures exists and is an object
-    if (!dataObj["stopDepartures"].is<JsonArray>()) {
+    if (!dataObj["stopDepartures"].is<JsonArray>())
+    {
       Serial.println("JSON missing stopDepartures array");
       isValid = false;
       transportTimesCount = 0;
+      this->errorDescription = "Missing stopDepartures array";
       return;
     }
 
@@ -56,9 +65,11 @@ public:
     JsonArray stopDepartures = dataObj["stopDepartures"].as<JsonArray>();
 
     // Iterate through all keys in stopDepartures (bus_24, bus_83, etc.)
-        // Parse each transport time in the array
-    for (JsonObject stopDeparture : stopDepartures) {
-      if (transportTimesCount >= MAX_TRANSPORT_TIMES) {
+    // Parse each transport time in the array
+    for (JsonObject stopDeparture : stopDepartures)
+    {
+      if (transportTimesCount >= MAX_TRANSPORT_TIMES)
+      {
         Serial.println("Reached max transport times limit");
         return;
       }
@@ -73,7 +84,8 @@ public:
     }
   };
 
-  bool isSuccess() {
+  bool isSuccess()
+  {
     return isValid && success && getStatusCode() >= 200 && getStatusCode() < 300;
   }
 

@@ -141,6 +141,19 @@ void requestData()
   }
   else
   {
+    if (response)
+    {
+      Serial.print("API Request failed with status code: ");
+      Serial.println(response->getStatusCode());
+      Serial.print("Response body: ");
+      Serial.println(response->getResponseBody());
+      statusBar->setValue("API Request Failed: " + String(response->getErrorDescription()));
+      delete response;
+    }
+    else
+    {
+      Serial.println("API Request failed: No response received");
+    }
     statusBar->setValue("API Request Failed");
   }
   isRequestInProgress = false;

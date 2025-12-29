@@ -15,6 +15,7 @@ public:
   {
     if (!request)
     {
+      Serial.println("Error: Request is null");
       return nullptr;
     }
 
