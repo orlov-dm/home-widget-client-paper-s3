@@ -174,9 +174,14 @@ void setup()
   btnRefresh.h = 60;
   btnRefresh.label = "Refresh";
 
+  // Draw initial UI to show immediate feedback
+  drawUI();
+
   sleepSetup();
 
   // Setup WiFi with error handling
+  statusBar->setValue("Connecting to WiFi...");
+  drawUI();
   WifiConnectionStatus wifiStatus = wifiSetup();
   if (wifiStatus != WifiConnectionStatus::CONNECTED)
   {
@@ -204,6 +209,8 @@ void setup()
     statusBar->setValue("WiFi Connected!");
     drawUI();
   }
+  statusBar->setValue("Syncing time...");
+  drawUI();
 
   // Setup time with error handling
   bool timeSuccess = timeSetup();
@@ -221,6 +228,8 @@ void setup()
       drawUI();
       delay(3000);
     }
+    statusBar->setValue("Loading data...");
+    drawUI();
   }
 
   requestData();
@@ -253,6 +262,9 @@ void loop()
     {
       btnRefresh.pressed = true;
       btnRefresh.dirty = true;
+
+      // Draw pressed state immediately for visual feedback
+      drawUI();
 
       requestData();
 
