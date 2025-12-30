@@ -80,7 +80,7 @@ void requestData()
     int labelHeight = 40;
     int labelWidth = 300;
 
-    time_t utcTime = time(nullptr);
+    time_t utcTime = getUtcTime();
     for (int i = 0; i < countToShow; i++)
     {
       String routeStr = String(times[i].route);
