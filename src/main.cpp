@@ -192,6 +192,7 @@ void setup()
     statusBar->setValue("WiFi Connected!");
     drawUI();
   }
+
   statusBar->setValue("Syncing time...");
   drawUI();
 
@@ -214,6 +215,9 @@ void setup()
     statusBar->setValue("Loading data...");
     drawUI();
   }
+
+  statusBar->setValue("Fetching data...");
+  drawUI();
 
   requestData();
   drawUI();
