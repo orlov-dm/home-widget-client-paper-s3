@@ -2,6 +2,7 @@
 #define UI_COMPONENTS_BUTTON_H
 
 #include <Arduino.h>
+#include "../../icons/index.h"
 
 struct Button
 {
@@ -9,6 +10,7 @@ struct Button
     String label;
     bool pressed = false;
     bool dirty = true;
+    Icon icon = ICON_NONE;
 };
 
 void drawButton(Button &b);

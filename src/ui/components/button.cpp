@@ -2,6 +2,8 @@
 
 #include <M5Unified.h>
 
+#include "../../icons/index.h"
+
 void drawButton(Button &b)
 {
     // Only draw if the state actually changed
@@ -17,13 +19,26 @@ void drawButton(Button &b)
 
     M5.Display.setTextColor(fg);
     M5.Display.setTextSize(2);
+    bool hasIcon = (b.icon != ICON_NONE);
+    int textOffsetX = hasIcon ? 40 : 0;
+    bool hasLabel = (b.label.length() != 0);
 
-    int32_t textWidth = M5.Display.textWidth(b.label);
-    int32_t textX = b.x + (b.w - textWidth) / 2;
-    int32_t textY = b.y + (b.h / 2) - 8;
+    if (hasIcon)
+    {
+        auto iconData = getIconData(b.icon);
+        if (iconData)
+            M5.Display.drawBitmap(b.x + 5, b.y + 5, iconData, 32, 28, fg, bg);
+    }
 
-    M5.Display.setCursor(textX, textY);
-    M5.Display.print(b.label);
+    if (hasLabel)
+    {
+        int32_t textWidth = M5.Display.textWidth(b.label);
+        int32_t textX = b.x + textOffsetX + (b.w - textOffsetX - textWidth) / 2;
+        int32_t textY = b.y + (b.h / 2) - 8;
+
+        M5.Display.setCursor(textX, textY);
+        M5.Display.print(b.label);
+    }
 
     b.dirty = false; // Reset dirty flag
 }

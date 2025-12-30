@@ -153,9 +153,9 @@ void setup()
 
   btnRefresh.x = 20;
   btnRefresh.y = statusBar->getHeight() + 20;
-  btnRefresh.w = 200;
-  btnRefresh.h = 60;
-  btnRefresh.label = "Refresh";
+  btnRefresh.w = 40;
+  btnRefresh.h = 40;
+  btnRefresh.icon = ICON_REFRESH;
 
   // Draw initial UI to show immediate feedback
   drawUI();
