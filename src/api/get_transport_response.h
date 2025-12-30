@@ -19,6 +19,7 @@ public:
   GetTransportResponse(int statusCode, String responseBody)
       : BaseResponse(statusCode, responseBody)
   {
+    this->transportTimesCount = 0;
     // Parse JSON - JsonDocument automatically manages memory in ArduinoJson 7
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, responseBody);
@@ -41,25 +42,29 @@ public:
     {
       Serial.println("JSON missing data object");
       isValid = false;
-      transportTimesCount = 0;
       this->errorDescription = "Missing data object";
       return;
     }
 
     JsonObject dataObj = doc["data"].as<JsonObject>();
 
+    if (success && dataObj["stopDepartures"].isNull())
+    {
+      Serial.println("No data, but API indicates success, this could be valid");
+      isValid = true;
+      return;
+    }
+
     // Check if stopDepartures exists and is an object
     if (!dataObj["stopDepartures"].is<JsonArray>())
     {
       Serial.println("JSON missing stopDepartures array");
       isValid = false;
-      transportTimesCount = 0;
       this->errorDescription = "Missing stopDepartures array";
       return;
     }
 
     isValid = true;
-    transportTimesCount = 0;
 
     // Parse stopDepartures as a JSON object (e.g., {"bus_24": [...], "bus_83": [...]})
     JsonArray stopDepartures = dataObj["stopDepartures"].as<JsonArray>();
@@ -68,7 +73,7 @@ public:
     // Parse each transport time in the array
     for (JsonObject stopDeparture : stopDepartures)
     {
-      if (transportTimesCount >= MAX_TRANSPORT_TIMES)
+      if (this->transportTimesCount >= MAX_TRANSPORT_TIMES)
       {
         Serial.println("Reached max transport times limit");
         return;
@@ -80,7 +85,7 @@ public:
           stopDeparture["expectedArriveTimestamp"] | 0;
       this->transportTimes[transportTimesCount].scheduledArriveTimestamp =
           stopDeparture["scheduledArriveTimestamp"] | 0;
-      transportTimesCount++;
+      this->transportTimesCount++;
     }
   };
 
