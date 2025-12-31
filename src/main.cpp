@@ -30,8 +30,8 @@ void drawLabels()
     {
       continue;
     }
-    drawLabel(routeLabels[i], 3);
-    drawLabel(timeLabels[i]);
+    drawLabel(routeLabels[i], 5);
+    drawLabel(timeLabels[i], 5);
   }
 }
 
@@ -77,8 +77,9 @@ void requestData()
     int countToShow = min(response->getTransportTimesCount(), 10); // Show max 10 entries
     int startX = 20;
     int startY = statusBar->getHeight() + btnRefresh.h + 40;
-    int labelHeight = 40;
-    int labelWidth = 300;
+    int labelHeight = 80;
+    int routeLabelWidth = 80;
+    int timeLabelWidth = 300;
 
     time_t utcTime = getUtcTime();
     for (int i = 0; i < countToShow; i++)
@@ -87,7 +88,7 @@ void requestData()
       Label routeLabel;
       routeLabel.x = startX;
       routeLabel.y = startY + labelHeight * i;
-      routeLabel.w = 40;
+      routeLabel.w = routeLabelWidth;
       routeLabel.h = labelHeight;
       routeLabel.value = routeStr;
       routeLabels[i] = routeLabel;
@@ -96,9 +97,9 @@ void requestData()
       int secondsDiff = expectedArriveTimestamp - utcTime;
       String secondsDiffString = "In " + String(secondsDiff / 60) + " min";
       Label timeLabel;
-      timeLabel.x = startX + 40 + 10;
+      timeLabel.x = startX + routeLabelWidth + 30;
       timeLabel.y = startY + labelHeight * i;
-      timeLabel.w = labelWidth;
+      timeLabel.w = timeLabelWidth;
       timeLabel.h = labelHeight;
       timeLabel.value = secondsDiffString;
       timeLabels[i] = timeLabel;
