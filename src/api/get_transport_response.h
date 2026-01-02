@@ -100,7 +100,7 @@ public:
   int getTransportTimesCount() { return transportTimesCount; }
 
 private:
-  static const int MAX_TRANSPORT_TIMES = 50; // Adjust based on your needs
+  static const int MAX_TRANSPORT_TIMES = 20;
   TransportTime transportTimes[MAX_TRANSPORT_TIMES];
   int transportTimesCount = 0;
   bool isValid = false;
