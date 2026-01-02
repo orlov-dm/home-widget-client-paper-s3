@@ -52,24 +52,34 @@ public:
       httpResponseCode = this->http.GET();
     }
 
-    // Handle Response
     TResponse *result = nullptr;
-    if (httpResponseCode > 0)
+    try
     {
-      String response = this->http.getString();
-      Serial.println(response);
-      result = new TResponse(httpResponseCode, response);
+      // Handle Response
+      if (httpResponseCode > 0)
+      {
+        String response = this->http.getString();
+        result = new TResponse(httpResponseCode, response);
+      }
+      else
+      {
+        Serial.print("Error: ");
+        Serial.println(httpResponseCode);
+      }
+      this->http.end();
+      return result;
     }
-    else
+    catch (...)
     {
-      Serial.print("Error: ");
-      Serial.println(httpResponseCode);
+      Serial.println("Exception occurred while processing response");
+      // Close connection
+      this->http.end();
+      if (result)
+      {
+        delete result;
+      }
+      return nullptr;
     }
-
-    // Close connection
-    this->http.end();
-
-    return result;
   }
 
 private:
