@@ -6,9 +6,10 @@ struct Label
 {
     int32_t x, y, w, h;
     String value;
-    bool dirty = true;
+    int8_t textSize;
+    bool dirty;
 };
 
-void drawLabel(Label &l, size_t textSize = 2);
+void drawLabel(Label &l);
 
 #endif // UI_COMPONENTS_LABEL_H
