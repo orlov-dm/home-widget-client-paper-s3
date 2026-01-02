@@ -57,13 +57,6 @@ void requestData()
   if (response && response->isSuccess())
   {
     TransportTime *times = response->getTransportTimes();
-    int startX = 20;
-    int startY = statusBar->getHeight() + btnRefresh.h + 40;
-    int labelHeight = 80;
-    int routeLabelWidth = 80;
-    int timeLabelWidth = 300;
-
-    time_t utcTime = getUtcTime();
     auto count = response->getTransportTimesCount();
     std::vector<ScheduleEntry> scheduleEntries;
     for (int i = 0; i < count; i++)
@@ -77,7 +70,7 @@ void requestData()
 
     delete response;
 
-    String timeStr = timestampToDatetime(utcTime);
+    String timeStr = timestampToDatetime(getUtcTime());
     statusBar->setValue((String("Data refreshed at ") + timeStr).c_str());
   }
   else
