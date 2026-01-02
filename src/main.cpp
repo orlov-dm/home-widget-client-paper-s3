@@ -9,31 +9,17 @@
 #include "utils/datetime_utils.h"
 #include "utils/dev_utils.h"
 #include "ui/components/index.h"
+#include "ui/views/schedule_view.h"
 
-const uint8_t MAX_SCHEDULE_LABELS = 10;
 Button btnRefresh;
 StatusBar *statusBar = nullptr;
+ScheduleView *scheduleView = nullptr;
 WifiConnectionStatus wifiStatus = WifiConnectionStatus::UNSET;
-Label routeLabels[MAX_SCHEDULE_LABELS];
-Label timeLabels[MAX_SCHEDULE_LABELS];
 ApiClient client;
-const uint32_t AWAKE_DURATION = 60000; // 1 minute in milliseconds (how long to stay awake)
+const uint32_t AWAKE_DURATION = 120000; // 2 minutes in milliseconds (how long to stay awake)
 uint32_t wakeupTime = 0;
 
 bool isRequestInProgress = false;
-
-void drawLabels()
-{
-  for (int i = 0; i < MAX_SCHEDULE_LABELS; i++)
-  {
-    if (routeLabels[i].value.length() == 0 || timeLabels[i].value.length() == 0)
-    {
-      continue;
-    }
-    drawLabel(routeLabels[i], 5);
-    drawLabel(timeLabels[i], 5);
-  }
-}
 
 void drawUI()
 {
@@ -43,17 +29,11 @@ void drawUI()
     statusBar->draw();
   }
   drawButton(btnRefresh);
-  drawLabels();
-  M5.Display.endWrite();
-}
-
-void clearLabels()
-{
-  for (int i = 0; i < MAX_SCHEDULE_LABELS; i++)
+  if (scheduleView)
   {
-    routeLabels[i] = Label();
-    timeLabels[i] = Label();
+    scheduleView->draw();
   }
+  M5.Display.endWrite();
 }
 
 void requestData()
@@ -69,12 +49,14 @@ void requestData()
   GetTransportResponse *response =
       client.doRequest<GetTransportResponse>(&request);
 
-  clearLabels();
+  if (scheduleView)
+  {
+    scheduleView->reset();
+  }
 
   if (response && response->isSuccess())
   {
     TransportTime *times = response->getTransportTimes();
-    int countToShow = min(response->getTransportTimesCount(), 10); // Show max 10 entries
     int startX = 20;
     int startY = statusBar->getHeight() + btnRefresh.h + 40;
     int labelHeight = 80;
@@ -82,28 +64,16 @@ void requestData()
     int timeLabelWidth = 300;
 
     time_t utcTime = getUtcTime();
-    for (int i = 0; i < countToShow; i++)
+    auto count = response->getTransportTimesCount();
+    std::vector<ScheduleEntry> scheduleEntries;
+    for (int i = 0; i < count; i++)
     {
-      String routeStr = String(times[i].route);
-      Label routeLabel;
-      routeLabel.x = startX;
-      routeLabel.y = startY + labelHeight * i;
-      routeLabel.w = routeLabelWidth;
-      routeLabel.h = labelHeight;
-      routeLabel.value = routeStr;
-      routeLabels[i] = routeLabel;
-
-      auto expectedArriveTimestamp = times[i].expectedArriveTimestamp;
-      int secondsDiff = expectedArriveTimestamp - utcTime;
-      String secondsDiffString = "In " + String(secondsDiff / 60) + " min";
-      Label timeLabel;
-      timeLabel.x = startX + routeLabelWidth + 30;
-      timeLabel.y = startY + labelHeight * i;
-      timeLabel.w = timeLabelWidth;
-      timeLabel.h = labelHeight;
-      timeLabel.value = secondsDiffString;
-      timeLabels[i] = timeLabel;
+      ScheduleEntry entry;
+      entry.route = times[i].route;
+      entry.expectedArriveTimestamp = times[i].expectedArriveTimestamp;
+      scheduleEntries.push_back(entry);
     }
+    scheduleView->setScheduleData(scheduleEntries);
 
     delete response;
 
@@ -143,7 +113,7 @@ void setup()
 
   M5.Display.begin();
 
-  M5.Display.setEpdMode(epd_mode_t::epd_fast);
+  M5.Display.setEpdMode(epd_mode_t::epd_text);
 
   // M5.Display.fillScreen(TFT_WHITE); // Clear screen once at startup
   M5.Display.setTextSize(2);
@@ -157,6 +127,10 @@ void setup()
   btnRefresh.w = 40;
   btnRefresh.h = 40;
   btnRefresh.icon = ICON_REFRESH;
+
+  scheduleView = new ScheduleView(
+      Position{0, btnRefresh.y + btnRefresh.h + 20},
+      Size{M5.Display.width(), M5.Display.height() - (btnRefresh.y + btnRefresh.h + 20)});
 
   // Draw initial UI to show immediate feedback
   drawUI();
