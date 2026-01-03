@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <M5GFX.h>
 
+#include "types.h"
+
 class StatusBar
 {
 public:
@@ -15,6 +17,16 @@ public:
 
     void setValue(String newValue);
     void draw();
+
+    Position getPosition() const
+    {
+        return Position{this->x, this->y};
+    }
+
+    Size getSize() const
+    {
+        return Size{this->w, this->h};
+    }
 
     int getHeight() const
     {

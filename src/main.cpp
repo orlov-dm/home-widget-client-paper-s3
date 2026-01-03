@@ -108,7 +108,6 @@ void setup()
 
   M5.Display.setEpdMode(epd_mode_t::epd_text);
 
-  // M5.Display.fillScreen(TFT_WHITE); // Clear screen once at startup
   M5.Display.setTextSize(2);
 
   statusBar = new StatusBar(
@@ -116,14 +115,15 @@ void setup()
       0, 0, M5.Display.width(), 40, "Starting up...");
 
   btnRefresh.x = 20;
-  btnRefresh.y = statusBar->getHeight() + 20;
+  btnRefresh.y = M5.Display.height() - 20 - 40;
   btnRefresh.w = 40;
   btnRefresh.h = 40;
   btnRefresh.icon = ICON_REFRESH;
 
+  auto scheduleViewY = statusBar->getSize().h + statusBar->getPosition().y + 10;
   scheduleView = new ScheduleView(
-      Position{0, btnRefresh.y + btnRefresh.h + 20},
-      Size{M5.Display.width(), M5.Display.height() - (btnRefresh.y + btnRefresh.h + 20)});
+      Position{0, scheduleViewY},
+      Size{M5.Display.width(), btnRefresh.y - scheduleViewY - 20});
 
   // Draw initial UI to show immediate feedback
   drawUI();
