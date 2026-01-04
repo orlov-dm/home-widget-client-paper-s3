@@ -127,14 +127,8 @@ void setup()
       Position{0, scheduleViewY},
       Size{M5.Display.width(), btnRefresh->getPosition().y - scheduleViewY - 20});
 
-  // Draw initial UI to show immediate feedback
-  drawUI();
-
   sleepSetup();
 
-  // Setup WiFi with error handling
-  statusBar->setValue("Connecting to WiFi...");
-  drawUI();
   WifiConnectionStatus wifiStatus = wifiSetup();
   if (wifiStatus != WifiConnectionStatus::CONNECTED)
   {
@@ -159,12 +153,7 @@ void setup()
       }
       delay(100);
     }
-    statusBar->setValue("WiFi Connected!");
-    drawUI();
   }
-
-  statusBar->setValue("Syncing time...");
-  drawUI();
 
   // Setup time with error handling
   bool timeSuccess = timeSetup();
@@ -185,9 +174,6 @@ void setup()
     statusBar->setValue("Loading data...");
     drawUI();
   }
-
-  statusBar->setValue("Fetching data...");
-  drawUI();
 
   requestData();
   drawUI();
