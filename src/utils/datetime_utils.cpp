@@ -224,6 +224,16 @@ String timestampToDatetime(time_t utcTimestamp)
     return result;
 }
 
+String formatTimestampToLocalTimeString(time_t utcTimestamp, const char *format)
+{
+    struct tm timeinfo;
+    localtime_r(&utcTimestamp, &timeinfo);
+
+    char buffer[64];
+    strftime(buffer, sizeof(buffer), format, &timeinfo);
+    return String(buffer);
+}
+
 time_t getUtcTime()
 {
     return time(nullptr);

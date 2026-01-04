@@ -15,7 +15,7 @@ void ScheduleView::draw()
 
     int32_t labelHeight = 80;
     int32_t routeLabelWidth = 80;
-    int32_t inLabelWidth = 80;
+    int32_t inLabelWidth = 60;
     int32_t timeLabelWidth = 70;
     int32_t minLabelWidth = 80;
     int index = 0;
@@ -38,19 +38,26 @@ void ScheduleView::draw()
 
         Label routeLabel(routeStr, {currentX, currentY}, {routeLabelWidth, labelHeight}, largerTextSize);
 
-        Label inLabel("In ", {currentX + routeLabelWidth + 40, currentY}, {inLabelWidth, labelHeight}, smallerTextSize);
+        Label inLabel("In", {currentX + routeLabelWidth + 30, currentY}, {inLabelWidth, labelHeight}, smallerTextSize);
 
         auto expectedArriveTimestamp = entry.expectedArriveTimestamp;
         int secondsDiff = expectedArriveTimestamp - utcTime;
         String secondsDiffString = String(secondsDiff / 60);
-        Label timeLabel(secondsDiffString, {currentX + routeLabelWidth + 40 + inLabelWidth, currentY}, {timeLabelWidth, labelHeight}, largerTextSize);
+        Label timeLabel(secondsDiffString, {currentX + routeLabelWidth + 30 + inLabelWidth, currentY}, {timeLabelWidth, labelHeight}, largerTextSize);
 
-        Label minLabel(" min", {currentX + routeLabelWidth + 40 + inLabelWidth + timeLabelWidth, currentY}, {minLabelWidth, labelHeight}, smallerTextSize);
+        Label minLabel("min", {currentX + routeLabelWidth + 30 + inLabelWidth + timeLabelWidth, currentY}, {minLabelWidth, labelHeight}, smallerTextSize);
+
+        Label fullTimeLabel(
+            formatTimestampToLocalTimeString(expectedArriveTimestamp, "%H:%M"),
+            {currentX + routeLabelWidth + 30 + inLabelWidth + timeLabelWidth + minLabelWidth + 10, currentY},
+            {this->size.w - (routeLabelWidth + 30 + inLabelWidth + timeLabelWidth + minLabelWidth + 20), labelHeight},
+            largerTextSize);
 
         routeLabel.render();
         inLabel.render();
         timeLabel.render();
         minLabel.render();
+        fullTimeLabel.render();
 
         M5.Display.fillRect(this->position.x + 20, currentY + labelHeight, this->size.w - 40, 2, TFT_DARKGRAY);
         index++;
