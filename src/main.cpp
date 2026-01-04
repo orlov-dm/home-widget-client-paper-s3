@@ -11,7 +11,7 @@
 #include "ui/components/index.h"
 #include "ui/views/schedule_view.h"
 
-Button btnRefresh;
+Button *btnRefresh = nullptr;
 StatusBar *statusBar = nullptr;
 ScheduleView *scheduleView = nullptr;
 WifiConnectionStatus wifiStatus = WifiConnectionStatus::UNSET;
@@ -28,7 +28,10 @@ void drawUI()
   {
     statusBar->draw();
   }
-  drawButton(btnRefresh);
+  if (btnRefresh)
+  {
+    btnRefresh->render();
+  }
   if (scheduleView)
   {
     scheduleView->draw();
@@ -114,16 +117,15 @@ void setup()
       M5.Display,
       0, 0, M5.Display.width(), 40, "Starting up...");
 
-  btnRefresh.x = 20;
-  btnRefresh.y = M5.Display.height() - 20 - 40;
-  btnRefresh.w = 40;
-  btnRefresh.h = 40;
-  btnRefresh.icon = ICON_REFRESH;
+  btnRefresh = new Button("",
+                          Position{20, M5.Display.height() - 20 - 40},
+                          Size{40, 40},
+                          ICON_REFRESH);
 
   auto scheduleViewY = statusBar->getSize().h + statusBar->getPosition().y + 10;
   scheduleView = new ScheduleView(
       Position{0, scheduleViewY},
-      Size{M5.Display.width(), btnRefresh.y - scheduleViewY - 20});
+      Size{M5.Display.width(), btnRefresh->getPosition().y - scheduleViewY - 20});
 
   // Draw initial UI to show immediate feedback
   drawUI();
@@ -225,10 +227,9 @@ void loop()
     // Reset awake timer on any touch interaction
     wakeupTime = millis();
 
-    if (isButtonTouched(btnRefresh, t.x, t.y))
+    if (btnRefresh->isTouched(t.x, t.y))
     {
-      btnRefresh.pressed = true;
-      btnRefresh.dirty = true;
+      btnRefresh->setPressed(true);
 
       // Draw pressed state immediately for visual feedback
       drawUI();
@@ -241,10 +242,9 @@ void loop()
 
   if (t.wasReleased())
   {
-    if (btnRefresh.pressed)
+    if (btnRefresh->isPressed())
     {
-      btnRefresh.pressed = false;
-      btnRefresh.dirty = true;
+      btnRefresh->setPressed(false);
       uiChanged = true;
     }
   }

@@ -1,15 +1,19 @@
-#ifndef UI_COMPONENTS_LABEL_H
-#define UI_COMPONENTS_LABEL_H
+#pragma once
+
 #include <Arduino.h>
 
-struct Label
+#include "component.h"
+
+class Label : public Component
 {
-    int32_t x, y, w, h;
+public:
+    Label(const String &value, const Position &position, const Size &size, int8_t textSize)
+        : Component(position, size), value(value), textSize(textSize) {};
+
+    void doRender() override;
+
+private:
     String value;
     int8_t textSize;
     bool dirty;
 };
-
-void drawLabel(Label &l);
-
-#endif // UI_COMPONENTS_LABEL_H

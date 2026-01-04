@@ -36,21 +36,21 @@ void ScheduleView::draw()
         String routeStr = String(entry.route) + ":";
         Serial.println("Route: " + routeStr + ", Expected Arrival: " + String(entry.expectedArriveTimestamp));
 
-        Label routeLabel = {currentX, currentY, routeLabelWidth, labelHeight, routeStr, largerTextSize, true};
+        Label routeLabel(routeStr, {currentX, currentY}, {routeLabelWidth, labelHeight}, largerTextSize);
 
-        Label inLabel = {currentX + routeLabelWidth + 40, currentY, inLabelWidth, labelHeight, "In ", smallerTextSize, true};
+        Label inLabel("In ", {currentX + routeLabelWidth + 40, currentY}, {inLabelWidth, labelHeight}, smallerTextSize);
 
         auto expectedArriveTimestamp = entry.expectedArriveTimestamp;
         int secondsDiff = expectedArriveTimestamp - utcTime;
         String secondsDiffString = String(secondsDiff / 60);
-        Label timeLabel = {currentX + routeLabelWidth + 40 + inLabelWidth, currentY, timeLabelWidth, labelHeight, secondsDiffString, largerTextSize, true};
+        Label timeLabel(secondsDiffString, {currentX + routeLabelWidth + 40 + inLabelWidth, currentY}, {timeLabelWidth, labelHeight}, largerTextSize);
 
-        Label minLabel = {currentX + routeLabelWidth + 40 + inLabelWidth + timeLabelWidth, currentY, minLabelWidth, labelHeight, " min", smallerTextSize, true};
+        Label minLabel(" min", {currentX + routeLabelWidth + 40 + inLabelWidth + timeLabelWidth, currentY}, {minLabelWidth, labelHeight}, smallerTextSize);
 
-        drawLabel(routeLabel);
-        drawLabel(inLabel);
-        drawLabel(timeLabel);
-        drawLabel(minLabel);
+        routeLabel.render();
+        inLabel.render();
+        timeLabel.render();
+        minLabel.render();
 
         M5.Display.fillRect(this->position.x + 20, currentY + labelHeight, this->size.w - 40, 2, TFT_DARKGRAY);
         index++;

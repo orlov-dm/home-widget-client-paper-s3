@@ -4,46 +4,37 @@
 
 #include "../../icons/index.h"
 
-void drawButton(Button &b)
+void Button::doRender()
 {
-    // Only draw if the state actually changed
-    if (!b.dirty)
-        return;
+    int32_t bg = this->isPressedState ? TFT_BLACK : TFT_WHITE;
+    int32_t fg = this->isPressedState ? TFT_WHITE : TFT_BLACK;
 
-    uint16_t bg = b.pressed ? TFT_BLACK : TFT_WHITE;
-    uint16_t fg = b.pressed ? TFT_WHITE : TFT_BLACK;
-
+    auto pos = this->getPosition();
+    auto size = this->getSize();
     // Draw ONLY the button area
-    M5.Display.fillRoundRect(b.x, b.y, b.w, b.h, 12, bg);
-    M5.Display.drawRoundRect(b.x, b.y, b.w, b.h, 12, TFT_BLACK);
+    M5.Display.fillRoundRect(pos.x, pos.y, size.w, size.h, 12, bg);
+    M5.Display.drawRoundRect(pos.x, pos.y, size.w, size.h, 12, TFT_BLACK);
 
     M5.Display.setTextColor(fg);
     M5.Display.setTextSize(2);
-    bool hasIcon = (b.icon != ICON_NONE);
-    int textOffsetX = hasIcon ? 40 : 0;
-    bool hasLabel = (b.label.length() != 0);
+    bool hasIcon = (this->icon != ICON_NONE);
+    uint8_t textOffsetX = hasIcon ? 40 : 0;
+    bool hasLabel = (this->label.length() != 0);
 
     if (hasIcon)
     {
-        auto iconData = getIconData(b.icon);
+        auto iconData = getIconData(this->icon);
         if (iconData)
-            M5.Display.drawBitmap(b.x + 5, b.y + 5, iconData, 32, 28, fg, bg);
+            M5.Display.drawBitmap(pos.x + 5, pos.y + 5, iconData, 32, 28, fg, bg);
     }
 
     if (hasLabel)
     {
-        int32_t textWidth = M5.Display.textWidth(b.label);
-        int32_t textX = b.x + textOffsetX + (b.w - textOffsetX - textWidth) / 2;
-        int32_t textY = b.y + (b.h / 2) - 8;
+        int32_t textWidth = M5.Display.textWidth(this->label);
+        int32_t textX = pos.x + textOffsetX + (size.w - textOffsetX - textWidth) / 2;
+        int32_t textY = pos.y + (size.h / 2) - 8;
 
         M5.Display.setCursor(textX, textY);
-        M5.Display.print(b.label);
+        M5.Display.print(this->label);
     }
-
-    b.dirty = false; // Reset dirty flag
-}
-
-bool isButtonTouched(Button &b, int32_t x, int32_t y)
-{
-    return (x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h);
 }

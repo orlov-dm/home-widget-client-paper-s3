@@ -2,23 +2,20 @@
 
 #include <M5Unified.h>
 
-void drawLabel(Label &l)
+void Label::doRender()
 {
-    if (!l.dirty)
-        return;
-
-    M5.Display.fillRect(l.x, l.y, l.w, l.h, TFT_WHITE);
+    auto pos = this->getPosition();
+    auto size = this->getSize();
+    M5.Display.fillRect(pos.x, pos.y, size.w, size.h, TFT_WHITE);
 
     M5.Display.setTextColor(TFT_BLACK);
-    M5.Display.setTextSize(l.textSize);
+    M5.Display.setTextSize(this->textSize);
 
     // Calculate vertical offset to center text based on text size
     // Each text size increases font height by ~8 pixels
-    int fontHeight = 8 * l.textSize;
-    int yOffset = (l.h - fontHeight) / 2;
+    int fontHeight = 8 * this->textSize;
+    int yOffset = (size.h - fontHeight) / 2;
 
-    M5.Display.setCursor(l.x + 10, l.y + yOffset);
-    M5.Display.print(l.value);
-
-    l.dirty = false; // Reset dirty flag
+    M5.Display.setCursor(pos.x + 10, pos.y + yOffset);
+    M5.Display.print(this->value);
 }

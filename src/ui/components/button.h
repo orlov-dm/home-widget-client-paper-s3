@@ -2,17 +2,35 @@
 #define UI_COMPONENTS_BUTTON_H
 
 #include <Arduino.h>
-#include "../../icons/index.h"
 
-struct Button
+#include "../../icons/index.h"
+#include "component.h"
+
+class Button : public Component
 {
-    int32_t x, y, w, h;
+public:
+    Button(const String &label, const Position &position, const Size &size, Icon icon = ICON_NONE) : Component(position, size), label(label), icon(icon) {};
+
+    void doRender() override;
+
+    void setPressed(bool isPressed)
+    {
+        if (this->isPressedState != isPressed)
+        {
+            this->isPressedState = isPressed;
+            this->setNeedsRender();
+        }
+    }
+
+    bool isPressed() const
+    {
+        return this->isPressedState;
+    }
+
+private:
     String label;
-    bool pressed = false;
-    bool dirty = true;
+    bool isPressedState = false;
     Icon icon = ICON_NONE;
 };
 
-void drawButton(Button &b);
-bool isButtonTouched(Button &b, int32_t x, int32_t y);
 #endif
