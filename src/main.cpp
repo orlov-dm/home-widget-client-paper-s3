@@ -74,7 +74,7 @@ void requestData()
     delete response;
 
     String timeStr = timestampToDatetime(getUtcTime());
-    statusBar->setValue((String("Data refreshed at ") + timeStr).c_str());
+    statusBar->setValue((String("Refresh time: ") + timeStr).c_str());
   }
   else
   {

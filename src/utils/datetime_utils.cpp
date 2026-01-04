@@ -197,16 +197,18 @@ String timestampToDatetime(time_t utcTimestamp)
 
     String result;
     result.reserve(19); // Pre-allocate for efficiency
-    result += String(timeinfo.tm_year + 1900);
-    result += "-";
-    if (timeinfo.tm_mon + 1 < 10)
-        result += "0";
-    result += String(timeinfo.tm_mon + 1);
-    result += "-";
+
     if (timeinfo.tm_mday < 10)
         result += "0";
     result += String(timeinfo.tm_mday);
+    result += ".";
+    if (timeinfo.tm_mon + 1 < 10)
+        result += "0";
+    result += String(timeinfo.tm_mon + 1);
+    result += ".";
+    result += String(timeinfo.tm_year + 1900);
     result += " ";
+
     if (timeinfo.tm_hour < 10)
         result += "0";
     result += String(timeinfo.tm_hour);
