@@ -5,7 +5,8 @@
 class Component
 {
 public:
-    Component(Position position, Size size) : position(position), size(size) {};
+    Component(const Position &position, const Size &size) : position(position), size(size) {};
+    Component(const Size &size) : position({0, 0}), size(size) {};
     virtual ~Component() {};
 
     void render()
@@ -25,6 +26,18 @@ public:
 
     const Position &getPosition() const { return position; }
     const Size &getSize() const { return size; }
+
+    void setPosition(const Position &pos)
+    {
+        position = pos;
+        setNeedsRender();
+    }
+
+    void setSize(const Size &s)
+    {
+        size = s;
+        setNeedsRender();
+    }
 
     void setNeedsRender()
     {

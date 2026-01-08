@@ -16,13 +16,12 @@ void StatusBar::draw()
     if (!this->dirty)
         return;
 
-    this->display.fillRect(this->x, this->y, this->w, this->h, TFT_LIGHTGREY);
-    this->display.setTextColor(TFT_BLACK);
-    this->display.setTextSize(2);
-    this->display.setCursor(this->x + 10, this->y + (this->h - 16) / 2); // Center vertically with padding
-    this->display.print(this->value);
-
-    this->display.setCursor(this->x + this->w - 60, this->y + (this->h - 16) / 2); // Right align with padding
-    this->display.print(String(M5.Power.getBatteryLevel()) + "%");
+    M5.Display.fillRect(this->x, this->y, this->w, this->h, TFT_LIGHTGREY);
+    M5.Display.setTextColor(TFT_BLACK);
+    M5.Display.setTextSize(2);
+    M5.Display.setCursor(this->x + 10, this->y + (this->h - 16) / 2); // Center vertically with padding
+    M5.Display.print(this->value);
+    M5.Display.setCursor(this->x + this->w - 60, this->y + (this->h - 16) / 2); // Right align with padding
+    M5.Display.print(String(M5.Power.getBatteryLevel()) + "%");
     this->dirty = false;
 }

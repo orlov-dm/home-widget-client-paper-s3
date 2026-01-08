@@ -34,9 +34,10 @@ void drawUI()
   }
   if (scheduleView)
   {
-    scheduleView->draw();
+    scheduleView->render();
   }
   M5.Display.endWrite();
+  M5.Display.display(); // Refresh e-paper display
 }
 
 void requestData()
@@ -113,19 +114,21 @@ void setup()
 
   M5.Display.setTextSize(2);
 
-  statusBar = new StatusBar(
-      M5.Display,
-      0, 0, M5.Display.width(), 40, "Starting up...");
+  statusBar = new StatusBar(0, 0, M5.Display.width(), 40, "Starting up...");
 
   btnRefresh = new Button("",
                           Position{20, M5.Display.height() - 20 - 40},
                           Size{40, 40},
                           ICON_REFRESH);
 
-  auto scheduleViewY = statusBar->getSize().h + statusBar->getPosition().y + 10;
-  scheduleView = new ScheduleView(
-      Position{0, scheduleViewY},
-      Size{M5.Display.width(), btnRefresh->getPosition().y - scheduleViewY - 20});
+  auto scheduleViewY = statusBar->getSize().h + statusBar->getPosition().y + 5;
+  scheduleView = (new ScheduleView(
+                      Position{0, scheduleViewY},
+                      Size{M5.Display.width(), btnRefresh->getPosition().y - scheduleViewY - 5}))
+                     ->setBackgroundColor(TFT_WHITE)
+                     ->setSpacing(5)
+                     ->setPadding(10)
+                     ->setSeparatorSize({M5.Display.width() - 10, 2});
 
   sleepSetup();
 

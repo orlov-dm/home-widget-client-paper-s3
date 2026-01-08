@@ -1,10 +1,10 @@
-#ifndef SCHEDULE_VIEW_H
-#define SCHEDULE_VIEW_H
+#pragma once
 
 #include <Arduino.h>
 #include <vector>
 
 #include "../components/types.h"
+#include "view.h"
 
 const uint8_t MAX_SCHEDULE_LABELS = 10;
 
@@ -14,26 +14,21 @@ struct ScheduleEntry
     uint32_t expectedArriveTimestamp;
 };
 
-class ScheduleView
+class ScheduleViewRow : public ViewBase<ScheduleViewRow>
 {
 public:
-    ScheduleView(Position pos, Size size) : position(pos), size(size) {};
-    ~ScheduleView() {};
+    ScheduleViewRow(const Size &size) : ViewBase<ScheduleViewRow>(size, LayoutDirection::Horizontal) {};
+};
 
-    void draw();
+class ScheduleView : public ViewBase<ScheduleView>
+{
+public:
+    ScheduleView(const Position &pos, const Size &size) : ViewBase<ScheduleView>(pos, size) {};
+
     void reset();
 
-    void setScheduleData(const std::vector<ScheduleEntry> &entries)
-    {
-        this->entries = entries;
-        dirty = true;
-    };
+    void setScheduleData(const std::vector<ScheduleEntry> &entries);
 
 private:
     std::vector<ScheduleEntry> entries;
-    Position position;
-    Size size;
-    bool dirty = true;
 };
-
-#endif // SCHEDULE_VIEW_H
