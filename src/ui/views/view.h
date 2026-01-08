@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <M5Unified.hpp>
 #include <Arduino.h>
 
@@ -54,25 +55,21 @@ public:
 
     void resetChildren()
     {
-        for (auto child : children)
-        {
-            delete child;
-        }
         children.clear();
         setNeedsRender();
     }
 
-    void addChild(Component *child)
+    void addChild(std::unique_ptr<Component> child)
     {
         if (child == nullptr)
             return;
 
-        children.push_back(child);
+        children.push_back(std::move(child));
     }
 
-    virtual void doRenderChild(Component *child)
+    virtual void doRenderChild(Component &child)
     {
-        child->render();
+        child.render();
     }
 
     void doRender() override
@@ -84,13 +81,13 @@ public:
 
         for (int i = 0; i < children.size(); i++)
         {
-            Component *child = children[i];
+            auto &child = children[i];
             if (child == nullptr)
                 continue;
             child->setPosition({currentX, currentY});
-            auto childSize = this->normalizeChildSize(child);
+            auto childSize = this->normalizeChildSize(child.get());
             Serial.printf("Rendering child at (%d, %d) size (%d, %d) %d\n", currentX, currentY, childSize.w, childSize.h, static_cast<int>(this->direction));
-            this->doRenderChild(child);
+            this->doRenderChild(*child);
 
             if (this->direction == LayoutDirection::Vertical)
             {
@@ -202,7 +199,7 @@ protected:
     }
 
 private:
-    std::vector<Component *> children;
+    std::vector<std::unique_ptr<Component>> children;
 
     LayoutDirection direction = LayoutDirection::Vertical;
     int32_t backgroundColor = TFT_WHITE;

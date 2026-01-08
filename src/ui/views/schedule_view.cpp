@@ -2,18 +2,14 @@
 
 #include <Arduino.h>
 #include <M5Unified.h>
+#include <memory>
 #include <utils/datetime_utils.h>
 
 #include "../components/label.h"
 
-void ScheduleView::reset()
-{
-    this->entries.clear();
-    this->resetChildren();
-}
-
 void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
 {
+    this->resetChildren();
     this->entries = entries;
 
     auto viewSize = this->getSize();
@@ -35,26 +31,27 @@ void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
             break;
         }
 
-        ScheduleViewRow *row = (new ScheduleViewRow(Size{0, rowHeight}))->setPadding(10);
+        auto row = std::make_unique<ScheduleViewRow>(Size{0, rowHeight});
+        row->setPadding(10);
         String routeStr = String(entry.route) + ":";
         Serial.println("Route: " + routeStr + ", Expected Arrival: " + String(entry.expectedArriveTimestamp));
-        row->addChild(new Label(routeStr, {routeLabelWidth, 0}, largerTextSize));
+        row->addChild(std::make_unique<Label>(routeStr, Size{routeLabelWidth, 0}, largerTextSize));
 
-        row->addChild(new Label("In", {inLabelWidth, 0}, smallerTextSize));
+        row->addChild(std::make_unique<Label>("In", Size{inLabelWidth, 0}, smallerTextSize));
 
         auto expectedArriveTimestamp = entry.expectedArriveTimestamp;
         int secondsDiff = expectedArriveTimestamp - utcTime;
         String secondsDiffString = String(secondsDiff / 60);
-        row->addChild(new Label(secondsDiffString, {timeLabelWidth, 0}, largerTextSize));
+        row->addChild(std::make_unique<Label>(secondsDiffString, Size{timeLabelWidth, 0}, largerTextSize));
 
-        row->addChild(new Label("min", {minLabelWidth, 0}, smallerTextSize));
+        row->addChild(std::make_unique<Label>("min", Size{minLabelWidth, 0}, smallerTextSize));
 
-        row->addChild(new Label(
+        row->addChild(std::make_unique<Label>(
             formatTimestampToLocalTimeString(expectedArriveTimestamp, "%H:%M"),
-            {viewSize.w - (routeLabelWidth + 30 + inLabelWidth + timeLabelWidth + minLabelWidth + 20), 0},
+            Size{viewSize.w - (routeLabelWidth + 30 + inLabelWidth + timeLabelWidth + minLabelWidth + 20), 0},
             largerTextSize));
 
-        this->addChild(row);
+        this->addChild(std::move(row));
 
         ++index;
     }

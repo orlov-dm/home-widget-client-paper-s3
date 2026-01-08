@@ -53,11 +53,6 @@ void requestData()
   GetTransportResponse *response =
       client.doRequest<GetTransportResponse>(&request);
 
-  if (scheduleView)
-  {
-    scheduleView->reset();
-  }
-
   if (response && response->isSuccess())
   {
     TransportTime *times = response->getTransportTimes();

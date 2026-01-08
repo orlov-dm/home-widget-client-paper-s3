@@ -25,8 +25,6 @@ class ScheduleView : public ViewBase<ScheduleView>
 public:
     ScheduleView(const Position &pos, const Size &size) : ViewBase<ScheduleView>(pos, size) {};
 
-    void reset();
-
     void setScheduleData(const std::vector<ScheduleEntry> &entries);
 
 private:
