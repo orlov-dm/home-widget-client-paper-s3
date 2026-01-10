@@ -1,5 +1,4 @@
-#ifndef GET_TRANSPORT_RESPONSE_H
-#define GET_TRANSPORT_RESPONSE_H
+#pragma once
 
 #include "base_response.h"
 #include <Arduino.h>
@@ -106,5 +105,3 @@ private:
   bool isValid = false;
   bool success = false;
 };
-
-#endif

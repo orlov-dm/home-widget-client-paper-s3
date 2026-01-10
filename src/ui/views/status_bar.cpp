@@ -5,8 +5,8 @@
 void StatusBar::setValue(String newValue)
 {
     this->label->setValue(newValue);
-
     this->refreshBatteryLevel();
+    this->setNeedsRender();
 }
 
 void StatusBar::refreshBatteryLevel()

@@ -1,5 +1,4 @@
-#ifndef SRC_ICONS_INDEX_H
-#define SRC_ICONS_INDEX_H
+#pragma once
 
 #include "refresh_icon.h"
 
@@ -19,5 +18,3 @@ inline const unsigned char *getIconData(Icon icon)
         return nullptr;
     }
 }
-
-#endif // SRC_ICONS_INDEX_H

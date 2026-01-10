@@ -1,5 +1,4 @@
-#ifndef WIFI_UTILS_H
-#define WIFI_UTILS_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -16,5 +15,3 @@ WifiConnectionStatus wifiSetup();
 boolean isWifiConnected();
 WifiConnectionStatus wifiConnect(bool needWait = true);
 void wifiDisconnect();
-
-#endif

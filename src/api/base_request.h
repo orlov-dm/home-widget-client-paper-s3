@@ -1,9 +1,9 @@
-#ifndef BASE_REQUEST_H
-#define BASE_REQUEST_H
+#pragma once
 
 #include <Arduino.h>
 
-class BaseRequest {
+class BaseRequest
+{
 public:
   void setMethod(String method) { this->method = method; }
   void setUrl(String url) { this->url = url; }
@@ -18,5 +18,3 @@ private:
   String url = "";
   String body = "";
 };
-
-#endif

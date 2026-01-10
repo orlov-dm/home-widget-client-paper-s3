@@ -1,5 +1,4 @@
-#ifndef BASE_RESPONSE_H
-#define BASE_RESPONSE_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -18,5 +17,3 @@ protected:
   String responseBody;
   String errorDescription;
 };
-
-#endif

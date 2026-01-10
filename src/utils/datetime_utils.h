@@ -1,5 +1,4 @@
-#ifndef DATETIME_UTILS_H
-#define DATETIME_UTILS_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -9,7 +8,7 @@ const uint32_t TIME_SYNC_INTERVAL = 86400; // Resync every 24 hours (in seconds)
 bool timeSetup();
 
 String timestampToDatetime(time_t timestamp);
-String formatTimestampToLocalTimeString(time_t timestamp, const char* format);
+String formatTimestampToLocalTimeString(time_t timestamp, const char *format);
 
 bool configureTime();
 
@@ -18,5 +17,3 @@ bool isTimeValid();
 bool shouldResyncTime();
 
 time_t getUtcTime();
-
-#endif // DATETIME_H

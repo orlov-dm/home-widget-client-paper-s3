@@ -1,6 +1,5 @@
 // api_client.h
-#ifndef API_CLIENT_H
-#define API_CLIENT_H
+#pragma once
 
 #include "base_request.h"
 #include "../secrets.h"
@@ -85,5 +84,3 @@ public:
 private:
   HTTPClient http;
 };
-
-#endif

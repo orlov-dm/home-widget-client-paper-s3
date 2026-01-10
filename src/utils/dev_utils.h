@@ -1,6 +1,3 @@
-#ifndef DEV_UTILS_H
-#define DEV_UTILS_H
+#pragma once
 
 bool isDevMode();
-
-#endif
