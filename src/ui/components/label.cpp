@@ -6,7 +6,6 @@ void Label::doRender()
 {
     auto pos = this->getPosition();
     auto size = this->getSize();
-    M5.Display.fillRect(pos.x, pos.y, size.w, size.h, TFT_WHITE);
 
     M5.Display.setTextColor(TFT_BLACK);
     M5.Display.setTextSize(this->textSize);

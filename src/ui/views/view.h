@@ -79,56 +79,27 @@ public:
         int32_t currentY = position.y + this->padding;
         int32_t currentX = position.x + this->padding;
 
+        M5.Display.fillRect(position.x, position.y, size.w, size.h, this->backgroundColor);
+
+        this->normalizeAllChildrenSizes();
         for (int i = 0; i < children.size(); i++)
         {
             auto &child = children[i];
             if (child == nullptr)
                 continue;
             child->setPosition({currentX, currentY});
-            auto childSize = this->normalizeChildSize(child.get());
+            auto childSize = child.get()->getSize();
             Serial.printf("Rendering child at (%d, %d) size (%d, %d) %d\n", currentX, currentY, childSize.w, childSize.h, static_cast<int>(this->direction));
             this->doRenderChild(*child);
 
+            if (i < children.size() - 1)
+                this->renderSeparator(currentX, currentY, childSize);
+
             if (this->direction == LayoutDirection::Vertical)
-            {
-                // draw a separator if needed starting from x + padding in the between of 2 children
-                if (separatorSize.w > 0 && separatorSize.h > 0 && i < children.size() - 1)
-                {
-                    M5.Display.fillRect(
-                        position.x + this->padding,
-                        currentY + childSize.h + (this->spacing / 2),
-                        separatorSize.w,
-                        separatorSize.h,
-                        TFT_DARKGRAY);
-                }
-
                 currentY += childSize.h + this->spacing;
-            }
             else
-            {
-                // draw a separator if needed starting from x + padding in the between of 2 children
-                if (separatorSize.w > 0 && separatorSize.h > 0 && i < children.size() - 1)
-                {
-                    M5.Display.fillRect(
-                        currentX + childSize.w + (this->spacing / 2),
-                        position.y + this->padding,
-                        separatorSize.w,
-                        separatorSize.h,
-                        TFT_DARKGRAY);
-                }
                 currentX += childSize.w + this->spacing;
-            }
         }
-
-        if (this->direction == LayoutDirection::Vertical)
-        {
-            currentY -= this->spacing; // Remove last spacing
-        }
-        else
-        {
-            currentX -= this->spacing; // Remove last spacing
-        }
-        clearRemainingArea(this->direction == LayoutDirection::Vertical ? currentY : currentX);
     }
 
 protected:
@@ -168,34 +139,98 @@ protected:
         return childSize;
     }
 
-    void clearRemainingArea(int32_t lastCoordinate)
+    void normalizeAllChildrenSizes()
     {
-        auto position = this->getPosition();
-        auto size = this->getSize();
-        if (this->direction == LayoutDirection::Horizontal)
+        if (this->direction == LayoutDirection::Vertical)
         {
-            if (lastCoordinate < position.x + size.w)
+            int32_t totalFixedHeight = 0;
+            int32_t numAutoHeightChildren = 0;
+            for (auto &child : children)
             {
-                M5.Display.fillRect(
-                    lastCoordinate,
-                    position.y,
-                    (position.x + size.w) - lastCoordinate,
-                    size.h,
-                    this->backgroundColor);
+                if (child == nullptr)
+                    continue;
+                auto childSize = child->getSize();
+                if (childSize.h == 0)
+                {
+                    numAutoHeightChildren++;
+                }
+                else
+                {
+                    totalFixedHeight += childSize.h;
+                }
+            }
+            int32_t availableHeight = this->getSize().h - (this->padding * 2) - (this->spacing * (children.size() - 1)) - totalFixedHeight;
+            int32_t autoHeight = numAutoHeightChildren > 0 ? availableHeight / numAutoHeightChildren : 0;
+
+            for (auto &child : children)
+            {
+                if (child == nullptr)
+                    continue;
+                auto childSize = child->getSize();
+                auto childHeight = childSize.h == 0 ? autoHeight : childSize.h;
+                auto childWidth = childSize.w == 0 ? this->getSize().w - (this->padding * 2) : childSize.w;
+                child->setSize({childWidth, childHeight});
             }
         }
         else
         {
-            if (lastCoordinate < position.y + size.h)
+            int32_t totalFixedWidth = 0;
+            int32_t numAutoWidthChildren = 0;
+            for (auto &child : children)
             {
-                M5.Display.fillRect(
-                    position.x,
-                    lastCoordinate,
-                    size.w,
-                    (position.y + size.h) - lastCoordinate,
-                    this->backgroundColor);
+                if (child == nullptr)
+                    continue;
+                auto childSize = child->getSize();
+                if (childSize.w == 0)
+                {
+                    numAutoWidthChildren++;
+                }
+                else
+                {
+                    totalFixedWidth += childSize.w;
+                }
+            }
+            int32_t availableWidth = this->getSize().w - (this->padding * 2) - (this->spacing * (children.size() - 1)) - totalFixedWidth;
+            int32_t autoWidth = numAutoWidthChildren > 0 ? availableWidth / numAutoWidthChildren : 0;
+
+            for (auto &child : children)
+            {
+                if (child == nullptr)
+                    continue;
+                auto childSize = child->getSize();
+                auto childWidth = childSize.w == 0 ? autoWidth : childSize.w;
+                auto childHeight = childSize.h == 0 ? this->getSize().h - (this->padding * 2) : childSize.h;
+                child->setSize({childWidth, childHeight});
             }
         }
+    }
+
+    Position renderSeparator(int32_t x, int32_t y, const Size &childSize)
+    {
+        bool hasSeparator = (this->separatorSize.w > 0 && this->separatorSize.h > 0);
+        if (!hasSeparator)
+            return {x, y};
+
+        const auto &position = this->getPosition();
+        if (this->direction == LayoutDirection::Vertical)
+        {
+            M5.Display.fillRect(
+                position.x + this->padding,
+                y + childSize.h + (this->spacing / 2),
+                this->separatorSize.w,
+                this->separatorSize.h,
+                TFT_DARKGRAY);
+        }
+        else
+        {
+            M5.Display.fillRect(
+                x + childSize.w + (this->spacing / 2),
+                position.y + this->padding,
+                this->separatorSize.w,
+                this->separatorSize.h,
+                TFT_DARKGRAY);
+        }
+        return {x, y};
     }
 
 private:

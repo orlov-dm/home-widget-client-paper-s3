@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <vector>
 
-#include "../components/types.h"
+#include "../types.h"
 #include "view.h"
 
 const uint8_t MAX_SCHEDULE_LABELS = 10;

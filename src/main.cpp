@@ -8,8 +8,9 @@
 #include "utils/sleep_utils.h"
 #include "utils/datetime_utils.h"
 #include "utils/dev_utils.h"
-#include "ui/components/index.h"
+#include "ui/views/status_bar.h"
 #include "ui/views/schedule_view.h"
+#include "ui/components/index.h"
 
 Button *btnRefresh = nullptr;
 StatusBar *statusBar = nullptr;
@@ -25,19 +26,13 @@ void drawUI()
 {
   M5.Display.startWrite();
   if (statusBar)
-  {
-    statusBar->draw();
-  }
+    statusBar->render();
   if (btnRefresh)
-  {
     btnRefresh->render();
-  }
   if (scheduleView)
-  {
     scheduleView->render();
-  }
   M5.Display.endWrite();
-  M5.Display.display(); // Refresh e-paper display
+  M5.Display.display();
 }
 
 void requestData()
@@ -70,7 +65,7 @@ void requestData()
     delete response;
 
     String timeStr = timestampToDatetime(getUtcTime());
-    statusBar->setValue((String("Refresh time: ") + timeStr).c_str());
+    statusBar->setValue(String("Refresh time: ") + timeStr);
   }
   else
   {
@@ -109,7 +104,7 @@ void setup()
 
   M5.Display.setTextSize(2);
 
-  statusBar = new StatusBar(0, 0, M5.Display.width(), 40, "Starting up...");
+  statusBar = new StatusBar(Position{0, 0}, Size{M5.Display.width(), 40}, "Starting up...");
 
   btnRefresh = new Button("",
                           Position{20, M5.Display.height() - 20 - 40},

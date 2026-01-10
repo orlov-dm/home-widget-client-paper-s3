@@ -21,8 +21,6 @@ void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
     int index = 0;
     time_t utcTime = getUtcTime();
 
-    int8_t smallerTextSize = 3;
-    int8_t largerTextSize = 5;
     for (auto &entry : this->entries)
     {
         if (index >= MAX_SCHEDULE_LABELS)
@@ -35,21 +33,21 @@ void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
         row->setPadding(10);
         String routeStr = String(entry.route) + ":";
         Serial.println("Route: " + routeStr + ", Expected Arrival: " + String(entry.expectedArriveTimestamp));
-        row->addChild(std::make_unique<Label>(routeStr, Size{routeLabelWidth, 0}, largerTextSize));
+        row->addChild(std::make_unique<Label>(routeStr, Size{routeLabelWidth, 0}, TextSize::LARGE));
 
-        row->addChild(std::make_unique<Label>("In", Size{inLabelWidth, 0}, smallerTextSize));
+        row->addChild(std::make_unique<Label>("In", Size{inLabelWidth, 0}, TextSize::MEDIUM));
 
         auto expectedArriveTimestamp = entry.expectedArriveTimestamp;
         int secondsDiff = expectedArriveTimestamp - utcTime;
         String secondsDiffString = String(secondsDiff / 60);
-        row->addChild(std::make_unique<Label>(secondsDiffString, Size{timeLabelWidth, 0}, largerTextSize));
+        row->addChild(std::make_unique<Label>(secondsDiffString, Size{timeLabelWidth, 0}, TextSize::LARGE));
 
-        row->addChild(std::make_unique<Label>("min", Size{minLabelWidth, 0}, smallerTextSize));
+        row->addChild(std::make_unique<Label>("min", Size{minLabelWidth, 0}, TextSize::MEDIUM));
 
         row->addChild(std::make_unique<Label>(
             formatTimestampToLocalTimeString(expectedArriveTimestamp, "%H:%M"),
             Size{viewSize.w - (routeLabelWidth + 30 + inLabelWidth + timeLabelWidth + minLabelWidth + 20), 0},
-            largerTextSize));
+            TextSize::LARGE));
 
         this->addChild(std::move(row));
 

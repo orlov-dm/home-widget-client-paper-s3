@@ -1,5 +1,4 @@
-#ifndef UI_COMPONENTS_BUTTON_H
-#define UI_COMPONENTS_BUTTON_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -32,5 +31,3 @@ private:
     bool isPressedState = false;
     Icon icon = ICON_NONE;
 };
-
-#endif
