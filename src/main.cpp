@@ -118,7 +118,7 @@ void setup()
                      ->setBackgroundColor(TFT_WHITE)
                      ->setSpacing(5)
                      ->setPadding(10)
-                     ->setSeparatorSize({M5.Display.width() - 10, 2});
+                     ->setSeparatorSize({M5.Display.width() - 10 * 2, 2});
 
   sleepSetup();
 
