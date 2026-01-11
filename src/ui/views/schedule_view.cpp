@@ -13,6 +13,7 @@ void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
     this->entries = entries;
 
     auto viewSize = this->getSize();
+    Serial.printf("ScheduleView size: w=%d, h=%d\n", viewSize.w, viewSize.h);
     int32_t rowHeight = 80;
     int32_t routeLabelWidth = 90;
     int32_t inLabelWidth = 60;
@@ -53,4 +54,5 @@ void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
 
         ++index;
     }
+    this->setNeedsRender();
 }

@@ -18,6 +18,8 @@ public:
         : Component(position, size), value(value), textSize(textSize) {};
     Label(const String &value, const Size &size, TextSize textSize = TextSize::SMALL)
         : Component(size), value(value), textSize(textSize) {};
+    Label(const String &id) : Component(id) {};
+    virtual ~Label() {};
 
     void setValue(const String &newValue)
     {
@@ -32,5 +34,4 @@ public:
 private:
     String value;
     TextSize textSize = TextSize::SMALL;
-    bool dirty;
 };

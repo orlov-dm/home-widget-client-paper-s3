@@ -38,3 +38,12 @@ void Button::doRender()
         M5.Display.print(this->label);
     }
 }
+
+void Button::setPressed(bool isPressed)
+{
+    if (this->isPressedState != isPressed)
+    {
+        this->isPressedState = isPressed;
+        this->setNeedsRender();
+    }
+}

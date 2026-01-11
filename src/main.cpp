@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <M5Unified.h>
+#include <memory>
 
 #include "api/api_client.h"
 #include "api/get_transport_request.h"
@@ -11,9 +12,15 @@
 #include "ui/views/status_bar.h"
 #include "ui/views/schedule_view.h"
 #include "ui/components/index.h"
+#include "ui/screens/screen_manager.h"
+#include "ui/screens/schedule_screen.h"
+#include "ui/screens/const.h"
+#include "app/component_ids.h"
+#include "app/component_manager.h"
+
+ScreenManager &screenManager = ScreenManager::getInstance();
 
 Button *btnRefresh = nullptr;
-StatusBar *statusBar = nullptr;
 ScheduleView *scheduleView = nullptr;
 WifiConnectionStatus wifiStatus = WifiConnectionStatus::UNSET;
 ApiClient client;
@@ -25,12 +32,7 @@ bool isRequestInProgress = false;
 void drawUI()
 {
   M5.Display.startWrite();
-  if (statusBar)
-    statusBar->render();
-  if (btnRefresh)
-    btnRefresh->render();
-  if (scheduleView)
-    scheduleView->render();
+  ScreenManager::getInstance().renderCurrentScreen();
   M5.Display.endWrite();
   M5.Display.display();
 }
@@ -60,12 +62,20 @@ void requestData()
       entry.expectedArriveTimestamp = times[i].expectedArriveTimestamp;
       scheduleEntries.push_back(entry);
     }
-    scheduleView->setScheduleData(scheduleEntries);
+
+    if (scheduleView)
+    {
+      scheduleView->setScheduleData(scheduleEntries);
+    }
+    else
+    {
+      Serial.println("ERROR: scheduleView is null!");
+    }
 
     delete response;
 
     String timeStr = timestampToDatetime(getUtcTime());
-    statusBar->setValue(String("Refresh time: ") + timeStr);
+    screenManager.setStatus("Refresh time: " + timeStr);
   }
   else
   {
@@ -75,14 +85,14 @@ void requestData()
       Serial.println(response->getStatusCode());
       Serial.print("Response body: ");
       Serial.println(response->getResponseBody());
-      statusBar->setValue("API Request Failed: " + String(response->getErrorDescription()));
+      screenManager.setStatus("API Request Failed: " + response->getErrorDescription());
       delete response;
     }
     else
     {
       Serial.println("API Request failed: No response received");
     }
-    statusBar->setValue("API Request Failed");
+    screenManager.setStatus("API Request Failed");
   }
   isRequestInProgress = false;
 }
@@ -99,33 +109,25 @@ void setup()
   wakeupTime = millis();
 
   M5.Display.begin();
-
   M5.Display.setEpdMode(epd_mode_t::epd_text);
-
   M5.Display.setTextSize(2);
 
-  statusBar = new StatusBar(Position{0, 0}, Size{M5.Display.width(), 40}, "Starting up...");
+  screenManager.init();
+  screenManager.addScreen(std::make_unique<ScheduleScreen>(ComponentID::SCHEDULE_SCREEN), ScreenID::TRANSPORT_SCHEDULE);
+  screenManager.showScreen(ScreenID::TRANSPORT_SCHEDULE);
 
-  btnRefresh = new Button("",
-                          Position{20, M5.Display.height() - 20 - 40},
-                          Size{40, 40},
-                          ICON_REFRESH);
+  // temporary until event manager is implemented
+  btnRefresh = ComponentManager::getInstance().findComponentById<Button>(String(ComponentID::REFRESH_BUTTON));
+  scheduleView = ComponentManager::getInstance().findComponentById<ScheduleView>(String(ComponentID::SCHEDULE_VIEW));
 
-  auto scheduleViewY = statusBar->getSize().h + statusBar->getPosition().y + 5;
-  scheduleView = (new ScheduleView(
-                      Position{0, scheduleViewY},
-                      Size{M5.Display.width(), btnRefresh->getPosition().y - scheduleViewY - 5}))
-                     ->setBackgroundColor(TFT_WHITE)
-                     ->setSpacing(5)
-                     ->setPadding(10)
-                     ->setSeparatorSize({M5.Display.width() - 10 * 2, 2});
+  Serial.printf("btnRefresh: %p, scheduleView: %p\n", btnRefresh, scheduleView);
 
   sleepSetup();
 
   WifiConnectionStatus wifiStatus = wifiSetup();
   if (wifiStatus != WifiConnectionStatus::CONNECTED)
   {
-    statusBar->setValue("WiFi Failed! Touch to retry");
+    screenManager.setStatus("WiFi Failed! Touch to retry");
     drawUI();
 
     // Wait for user to touch screen to retry
@@ -135,12 +137,12 @@ void setup()
       auto t = M5.Touch.getDetail();
       if (t.wasPressed())
       {
-        statusBar->setValue("Retrying WiFi...");
+        screenManager.setStatus("Retrying WiFi...");
         drawUI();
         wifiStatus = wifiSetup();
         if (wifiStatus != WifiConnectionStatus::CONNECTED)
         {
-          statusBar->setValue("WiFi Failed! Touch to retry");
+          screenManager.setStatus("WiFi Failed! Touch to retry");
           drawUI();
         }
       }
@@ -152,7 +154,7 @@ void setup()
   bool timeSuccess = timeSetup();
   if (!timeSuccess)
   {
-    statusBar->setValue("Time sync failed! Retrying...");
+    screenManager.setStatus("Time sync failed! Retrying...");
     drawUI();
     delay(2000);
 
@@ -160,11 +162,11 @@ void setup()
     timeSuccess = timeSetup();
     if (!timeSuccess)
     {
-      statusBar->setValue("Time sync failed! Data may be inaccurate");
+      screenManager.setStatus("Time sync failed! Data may be inaccurate");
       drawUI();
       delay(3000);
     }
-    statusBar->setValue("Loading data...");
+    screenManager.setStatus("Loading data...");
     drawUI();
   }
 
@@ -190,7 +192,7 @@ void loop()
     }
     else
     {
-      statusBar->setValue("Auto sleep...");
+      screenManager.setStatus("Auto sleep...");
       drawUI();
       delay(1000);
 

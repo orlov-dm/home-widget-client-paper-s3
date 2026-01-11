@@ -4,4 +4,5 @@ Compile:
 
 TODO:
 - [ ] Padding (top/left/right/bottom) + (top/bottom) + (left/right)
-- [ ] Introduce Screen view to store all views internally
+- [x] Introduce Screen view to store all views internally
+- [ ] Component event manager

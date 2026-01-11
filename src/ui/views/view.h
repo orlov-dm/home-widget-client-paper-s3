@@ -13,12 +13,15 @@ enum class LayoutDirection
     Horizontal
 };
 
+constexpr int8_t DEFAULT_SEPARATOR_THICKNESS = 2;
+
 template <typename Derived>
 class ViewBase : public Component
 {
 public:
     ViewBase(const Position &position, const Size &size, LayoutDirection direction = LayoutDirection::Vertical) : Component(position, size), direction(direction) {};
     ViewBase(const Size &size, LayoutDirection direction = LayoutDirection::Vertical) : Component(size), direction(direction) {};
+    ViewBase(const String &id, LayoutDirection direction = LayoutDirection::Vertical) : Component(id), direction(direction) {};
 
     virtual ~ViewBase()
     {
@@ -32,7 +35,7 @@ public:
         return static_cast<Derived *>(this);
     }
 
-    Derived *setSeparatorSize(Size s)
+    Derived *setSeparatorSize(const Size &s)
     {
         this->separatorSize = s;
         setNeedsRender();
@@ -64,7 +67,9 @@ public:
         if (child == nullptr)
             return;
 
+        child->setParent(this);
         children.push_back(std::move(child));
+        setNeedsRender();
     }
 
     virtual void doRenderChild(Component &child)
@@ -89,7 +94,6 @@ public:
                 continue;
             child->setPosition({currentX, currentY});
             auto childSize = child.get()->getSize();
-            Serial.printf("Rendering child at (%d, %d) size (%d, %d) %d\n", currentX, currentY, childSize.w, childSize.h, static_cast<int>(this->direction));
             this->doRenderChild(*child);
 
             if (i < children.size() - 1)
@@ -205,11 +209,35 @@ protected:
         }
     }
 
-    Position renderSeparator(int32_t x, int32_t y, const Size &childSize)
+    void renderSeparator(int32_t x, int32_t y, const Size &childSize)
     {
-        bool hasSeparator = (this->separatorSize.w > 0 && this->separatorSize.h > 0);
+        bool hasSeparator = (this->separatorSize.w >= 0 && this->separatorSize.h >= 0);
         if (!hasSeparator)
-            return {x, y};
+            return;
+        if (this->separatorSize.w != 0 || this->separatorSize.h != 0)
+        {
+            Size separatorSize = this->separatorSize;
+            if (this->direction == LayoutDirection::Vertical)
+            {
+                if (separatorSize.w == 0)
+                    separatorSize.w = this->getSize().w - (this->padding * 2);
+                if (separatorSize.h == 0)
+                    separatorSize.h = DEFAULT_SEPARATOR_THICKNESS;
+            }
+            else
+            {
+                if (separatorSize.h == 0)
+                    separatorSize.h = this->getSize().h - (this->padding * 2);
+                if (separatorSize.w == 0)
+                    separatorSize.w = DEFAULT_SEPARATOR_THICKNESS;
+            }
+            this->separatorSize = separatorSize;
+        }
+
+        if (this->separatorSize.w <= 0 || this->separatorSize.h <= 0) {
+            Serial.println("Invalid separator size");
+            return;
+        }
 
         const auto &position = this->getPosition();
         if (this->direction == LayoutDirection::Vertical)
@@ -230,7 +258,6 @@ protected:
                 this->separatorSize.h,
                 TFT_DARKGRAY);
         }
-        return {x, y};
     }
 
 private:
@@ -239,7 +266,7 @@ private:
     LayoutDirection direction = LayoutDirection::Vertical;
     int32_t backgroundColor = TFT_WHITE;
 
-    Size separatorSize = {0, 0};
+    Size separatorSize = {-1, -1};
     int32_t spacing = 0;
     int32_t padding = 0;
 };
