@@ -6,38 +6,17 @@
 class Component
 {
 public:
-    Component(const Position &position, const Size &size) : position(position), size(size) {};
-    Component(const Size &size, const String &id) : position({0, 0}), size(size), id(id)
-    {
-        ComponentManager::getInstance().registerComponent(id, this);
-    };
-    Component(const String &id) : position({0, 0}), size({0, 0}), id(id)
-    {
-        ComponentManager::getInstance().registerComponent(id, this);
-    };
-    Component(const Size &size) : position({0, 0}), size(size) {};
-    Component() : position({0, 0}), size({0, 0}) {};
+    Component(const Position &position, const Size &size);
+    Component(const Size &size, const String &id);
+    Component(const String &id);
+    Component(const Size &size);
+    Component();
 
-    virtual ~Component()
-    {
-        if (id.length() > 0)
-            ComponentManager::getInstance().unregisterComponent(id);
-    };
+    virtual ~Component();
 
-    void render(bool force = false)
-    {
-        if (this->isRendered && !force)
-            return;
+    void render(bool force = false);
 
-        this->doRender();
-        this->isRendered = true;
-    }
-
-    bool isTouched(int32_t x, int32_t y) const
-    {
-        return (x > position.x && x < position.x + size.w &&
-                y > position.y && y < position.y + size.h);
-    }
+    bool isTouched(int32_t x, int32_t y) const;
 
     const Position &getPosition() const { return position; }
     const Size &getSize() const { return size; }
@@ -78,19 +57,9 @@ public:
         setNeedsRender();
     }
 
-    void setNeedsRender()
-    {
-        this->isRendered = false;
-        if (this->parent)
-        {
-            this->parent->setNeedsRender();
-        }
-    }
+    void setNeedsRender();
 
-    void setParent(Component *p)
-    {
-        this->parent = p;
-    }
+    void setParent(Component *p);
 
 protected:
     virtual void doRender() = 0;
