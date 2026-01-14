@@ -9,6 +9,12 @@
 class ApiClient
 {
 public:
+  static ApiClient &getInstance()
+  {
+    static ApiClient instance;
+    return instance;
+  }
+
   template <typename TResponse>
   TResponse *doRequest(BaseRequest *request)
   {
@@ -82,5 +88,9 @@ public:
   }
 
 private:
+  ApiClient() {}
+  ApiClient(const ApiClient &) = delete;
+  ApiClient &operator=(const ApiClient &) = delete;
+
   HTTPClient http;
 };

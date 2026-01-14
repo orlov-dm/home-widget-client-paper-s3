@@ -11,14 +11,25 @@ void ScreenManager::renderCurrentScreen()
 
 void ScreenManager::showScreen(ScreenID screenId)
 {
-    this->statusBar->render(true);
+    if (this->currentScreen)
+    {
+        this->currentScreen->onExit();
+    }
     auto it = this->screens.find(screenId);
     if (it != this->screens.end())
     {
         this->currentScreen = it->second.get();
         this->currentScreen->setPosition({0, STATUS_BAR_HEIGHT});
         this->currentScreen->setSize({M5.Display.width(), this->getAvailableHeight()});
-        this->currentScreen->render(true);
+        this->currentScreen->onEnter();
+    }
+}
+
+void ScreenManager::refreshScreen()
+{
+    if (this->currentScreen)
+    {
+        this->currentScreen->onRefresh();
     }
 }
 

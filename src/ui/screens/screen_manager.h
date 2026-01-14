@@ -24,6 +24,7 @@ public:
 
     void renderCurrentScreen();
     void showScreen(ScreenID screenId);
+    void refreshScreen();
     void addScreen(std::unique_ptr<View> screen, ScreenID screenId);
 
     void setStatus(const String &status);
@@ -32,6 +33,7 @@ public:
         return this->currentScreen;
     }
 
+protected:
     const int32_t getAvailableHeight() const
     {
         return M5.Display.height() - STATUS_BAR_HEIGHT;

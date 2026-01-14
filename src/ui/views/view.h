@@ -106,6 +106,10 @@ public:
         }
     }
 
+    virtual void onEnter() {}
+    virtual void onExit() {}
+    virtual void onRefresh() {}
+
 protected:
     Size normalizeChildSize(Component *child)
     {
@@ -234,7 +238,8 @@ protected:
             this->separatorSize = separatorSize;
         }
 
-        if (this->separatorSize.w <= 0 || this->separatorSize.h <= 0) {
+        if (this->separatorSize.w <= 0 || this->separatorSize.h <= 0)
+        {
             Serial.println("Invalid separator size");
             return;
         }

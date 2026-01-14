@@ -3,10 +3,11 @@
 #include <Arduino.h>
 #include <memory>
 
+#include "screen_manager.h"
+#include "../components/index.h"
 #include "../views/schedule_view.h"
 #include "../../app/component_ids.h"
 #include "../../icons/index.h"
-#include "screen_manager.h"
 
 class ScheduleScreen : public View
 {
@@ -18,12 +19,30 @@ public:
         scheduleView->setSpacing(5);
         scheduleView->setPadding(10);
         scheduleView->setSeparatorSize({0, 2});
+        this->scheduleView = scheduleView.get();
         this->addChild(std::move(scheduleView));
 
         this->addChild(std::make_unique<Button>(
             "",
             Size{40, 40},
             ComponentID::REFRESH_BUTTON,
-            ICON_REFRESH));
+            Icon::ICON_REFRESH));
     };
+
+    virtual ~ScheduleScreen() {}
+
+protected:
+    void onEnter() override
+    {
+        this->requestData();
+    }
+    void onRefresh() override
+    {
+        this->requestData();
+    }
+    void requestData();
+
+private:
+    bool isRequestInProgress = false;
+    ScheduleView *scheduleView = nullptr;
 };

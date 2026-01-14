@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base_response.h"
+#include "../base_response.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
@@ -27,21 +27,28 @@ public:
     {
       Serial.print("JSON parsing failed: ");
       Serial.println(error.c_str());
-      this->errorDescription = error.c_str();
-      isValid = false;
-      success = false;
+      this->setErrorDescription(error.c_str());
+      this->setIsValid(false);
+      this->setIsSuccessValue(false);
       return;
     }
 
-    // Parse success field
-    success = doc["success"] | false;
+    bool success = doc["success"] | false;
+    if (!success)
+    {
+      Serial.println("API indicates failure");
+      this->setErrorDescription("API indicated failure");
+      this->setIsSuccessValue(false);
+      return;
+    }
 
+    this->setIsSuccessValue(true);
     // Check if data exists
     if (!doc["data"].is<JsonObject>())
     {
       Serial.println("JSON missing data object");
-      isValid = false;
-      this->errorDescription = "Missing data object";
+      this->setIsValid(false);
+      this->setErrorDescription("Missing data object");
       return;
     }
 
@@ -50,7 +57,7 @@ public:
     if (success && dataObj["stopDepartures"].isNull())
     {
       Serial.println("No data, but API indicates success, this could be valid");
-      isValid = true;
+      this->setIsValid(true);
       return;
     }
 
@@ -58,12 +65,12 @@ public:
     if (!dataObj["stopDepartures"].is<JsonArray>())
     {
       Serial.println("JSON missing stopDepartures array");
-      isValid = false;
-      this->errorDescription = "Missing stopDepartures array";
+      this->setIsValid(false);
+      this->setErrorDescription("Missing stopDepartures array");
       return;
     }
 
-    isValid = true;
+    this->setIsValid(true);
 
     // Parse stopDepartures as a JSON object (e.g., {"bus_24": [...], "bus_83": [...]})
     JsonArray stopDepartures = dataObj["stopDepartures"].as<JsonArray>();
@@ -88,13 +95,6 @@ public:
     }
   };
 
-  bool isSuccess()
-  {
-    return isValid && success && getStatusCode() >= 200 && getStatusCode() < 300;
-  }
-
-  bool getSuccess() { return success; }
-
   TransportTime *getTransportTimes() { return transportTimes; }
   int getTransportTimesCount() { return transportTimesCount; }
 
@@ -102,6 +102,4 @@ private:
   static const int MAX_TRANSPORT_TIMES = 20;
   TransportTime transportTimes[MAX_TRANSPORT_TIMES];
   int transportTimesCount = 0;
-  bool isValid = false;
-  bool success = false;
 };

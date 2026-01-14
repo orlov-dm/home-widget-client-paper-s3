@@ -14,6 +14,8 @@ void goToSleep(uint64_t sleepDurationSeconds)
 {
     Serial.println("Preparing to sleep...");
 
+    delay(100);
+
     if (sleepDurationSeconds == 0)
     {
         Serial.println("Going to sleep indefinitely (wake on button only)");
