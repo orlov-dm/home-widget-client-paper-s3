@@ -152,7 +152,6 @@ void Application::touchEvent()
         {
             Serial.println("Refresh button released");
             btnRefresh->setPressed(false);
-            ScreenManager::getInstance().refreshScreen();
             renderUI();
         }
     }
