@@ -44,6 +44,6 @@ void Button::setPressed(bool isPressed)
     if (this->isPressedState != isPressed)
     {
         this->isPressedState = isPressed;
-        this->setNeedsRender();
+        this->render(true);
     }
 }

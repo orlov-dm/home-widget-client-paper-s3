@@ -30,7 +30,7 @@ void Application::setup()
     wakeupTime = millis();
 
     M5.Display.begin();
-    M5.Display.setEpdMode(epd_mode_t::epd_text);
+    M5.Display.setEpdMode(epd_mode_t::epd_fast);
     M5.Display.setTextSize(2);
 
     Serial.printf("btnRefresh: %p, scheduleView: %p\n", btnRefresh, scheduleView);
@@ -172,8 +172,17 @@ void Application::touchEvent()
 
 void Application::renderUI()
 {
-    M5.Display.startWrite();
-    ScreenManager::getInstance().renderCurrentScreen();
-    M5.Display.endWrite();
-    M5.Display.display();
+    M5.Display.setEpdMode(epd_mode_t::epd_text);
+    try
+    {
+        M5.Display.startWrite();
+        ScreenManager::getInstance().renderCurrentScreen();
+        M5.Display.endWrite();
+        M5.Display.display();
+    }
+    catch (...)
+    {
+        Serial.println("Error during UI rendering");
+    }
+    M5.Display.setEpdMode(epd_mode_t::epd_fast);
 }
