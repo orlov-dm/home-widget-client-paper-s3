@@ -119,9 +119,22 @@ void Application::loop()
         }
     }
 
+    // Handle touch events first for responsive UI
     Application::touchEvent();
 
-    delay(100);
+    // Process pending refresh if flagged
+    if (shouldRefresh)
+    {
+        shouldRefresh = false;
+        Serial.println("Starting data refresh");
+        ScreenManager::getInstance().setStatus("Refreshing data...");
+        renderUI();
+        ScreenManager::getInstance().refreshScreen();
+        renderUI();
+        Serial.println("Data refresh complete");
+        return; // Return to allow next loop to handle any pending events
+    }
+    delay(50); // Reduced delay for more responsive touch
 }
 
 void Application::touchEvent()
@@ -137,12 +150,11 @@ void Application::touchEvent()
         if (btnRefresh && btnRefresh->isTouched(t.x, t.y))
         {
             btnRefresh->setPressed(true);
-            Serial.println("Refresh button pressed");
-            ScreenManager::getInstance().setStatus("Refreshing data...");
-            renderUI();
-            ScreenManager::getInstance().refreshScreen();
-            renderUI();
+            Serial.println("Refresh button pressed - flagging for refresh");
+            this->shouldRefresh = true; // Flag refresh to happen in main loop
+            renderUI();                 // Immediately show pressed state
         }
+        return; // Return immediately to allow release event to be detected on next loop
     }
 
     if (t.wasReleased())
@@ -152,8 +164,9 @@ void Application::touchEvent()
         {
             Serial.println("Refresh button released");
             btnRefresh->setPressed(false);
-            renderUI();
+            renderUI(); // Immediately show released state
         }
+        return; // Return immediately to allow next loop to handle any pending events
     }
 }
 

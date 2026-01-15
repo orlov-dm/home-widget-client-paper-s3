@@ -27,6 +27,7 @@ private:
     uint64_t wakeupTime = 0;
 
     bool isRequestInProgress = false;
+    bool shouldRefresh = false; // Flag to trigger refresh in main loop
 
     // TODO get rid of these pointers
     Button *btnRefresh = nullptr;
