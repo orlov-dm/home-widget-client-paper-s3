@@ -4,8 +4,7 @@
 #include <unordered_map>
 
 #include "../std/string_hash.h"
-
-class Component;
+#include "../ui/components/component.h"
 
 class ComponentManager
 {
@@ -28,34 +27,9 @@ public:
     void unregisterAllComponents();
 
     template <typename T>
-    T *findComponentById(const String &id)
-    {
-        Serial.printf("Finding component with ID: %s\n", id.c_str());
-        auto it = this->components.find(id);
-        if (it != this->components.end())
-        {
-            Serial.printf("Component with ID: %s found\n", id.c_str());
-            return static_cast<T *>(it->second);
-        }
-
-        Serial.printf("Component with ID: %s not found\n", id.c_str());
-        return nullptr;
-    }
-
+    T *findComponentById(const String &id);
     template <typename T>
-    T *findTouchableComponentAtPosition(int32_t x, int32_t y)
-    {
-        // Iterate in REVERSE - last rendered is on top
-        for (auto it = touchableComponentList.rbegin();
-             it != touchableComponentList.rend(); ++it)
-        {
-            if ((*it)->isTouched(x, y))
-            {
-                return static_cast<T *>(*it);
-            }
-        }
-        return nullptr;
-    }
+    T *findTouchableComponentAtPosition(int32_t x, int32_t y);
 
 private:
     ComponentManager() : components() {}
@@ -64,3 +38,33 @@ private:
     std::unordered_map<String, Component *> components;
     std::vector<Component *> touchableComponentList;
 };
+
+template <typename T>
+T *ComponentManager::findComponentById(const String &id)
+{
+    Serial.printf("Finding component with ID: %s\n", id.c_str());
+    auto it = this->components.find(id);
+    if (it != this->components.end())
+    {
+        Serial.printf("Component with ID: %s found\n", id.c_str());
+        return static_cast<T *>(it->second);
+    }
+
+    Serial.printf("Component with ID: %s not found\n", id.c_str());
+    return nullptr;
+}
+
+template <typename T>
+T *ComponentManager::findTouchableComponentAtPosition(int32_t x, int32_t y)
+{
+    // Iterate in REVERSE - last rendered is on top
+    for (auto it = touchableComponentList.rbegin();
+         it != touchableComponentList.rend(); ++it)
+    {
+        if ((*it)->isTouched(x, y))
+        {
+            return static_cast<T *>(*it);
+        }
+    }
+    return nullptr;
+}

@@ -1,4 +1,5 @@
 #include "component.h"
+#include "../../app/component_manager.h"
 
 Component::Component(const Position &position, const Size &size)
     : position(position), size(size)

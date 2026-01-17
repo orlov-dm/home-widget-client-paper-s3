@@ -3,6 +3,7 @@
 #include <M5Unified.h>
 
 #include "../../icons/index.h"
+#include "../../app/component_manager.h"
 
 void Button::init()
 {

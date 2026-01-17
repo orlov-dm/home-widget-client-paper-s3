@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../types.h"
-#include "../../app/component_manager.h"
 
 class Component
 {
