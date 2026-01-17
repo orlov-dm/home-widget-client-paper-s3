@@ -34,8 +34,6 @@ void Application::setup()
     M5.Display.setEpdMode(epd_mode_t::epd_fast);
     M5.Display.setTextSize(2);
 
-    Serial.printf("btnRefresh: %p, scheduleView: %p\n", btnRefresh, scheduleView);
-
     sleepSetup();
 
     ScreenManager &screenManager = ScreenManager::getInstance();
@@ -50,9 +48,7 @@ void Application::setup()
         // Wait for user to touch screen to retry
         while (wifiStatus != WifiConnectionStatus::CONNECTED)
         {
-            M5.update();
-            auto t = M5.Touch.getDetail();
-            if (t.wasPressed())
+            if (EventManager::getInstance().detectAnyTouch())
             {
                 screenManager.setStatus("Retrying WiFi...");
                 renderUI();
@@ -89,10 +85,6 @@ void Application::setup()
 
     screenManager.addScreen(std::make_unique<ScheduleScreen>(ComponentID::SCHEDULE_SCREEN), ScreenID::TRANSPORT_SCHEDULE);
     screenManager.showScreen(ScreenID::TRANSPORT_SCHEDULE);
-
-    // temporary until event manager is implemented
-    btnRefresh = ComponentManager::getInstance().findComponentById<Button>(String(ComponentID::REFRESH_BUTTON));
-    scheduleView = ComponentManager::getInstance().findComponentById<ScheduleView>(String(ComponentID::SCHEDULE_VIEW));
 
     renderUI();
 }

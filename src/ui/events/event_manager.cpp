@@ -4,6 +4,14 @@
 
 #include "../components/button.h"
 #include "../screens/screen_manager.h"
+#include "../../app/component_manager.h"
+
+bool EventManager::detectAnyTouch()
+{
+    M5.update();
+    auto t = M5.Touch.getDetail();
+    return t.wasPressed();
+}
 
 void EventManager::handleTouch(uint64_t *wakeupTime)
 {

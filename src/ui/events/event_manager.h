@@ -15,6 +15,7 @@ public:
     }
 
     void handleTouch(uint64_t *wakeupTime);
+    bool detectAnyTouch();
     bool needsRender() const
     {
         return shouldRender;
