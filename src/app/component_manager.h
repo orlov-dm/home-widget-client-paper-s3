@@ -16,8 +16,16 @@ public:
         return instance;
     }
 
+    ~ComponentManager()
+    {
+        unregisterAllComponents();
+    }
+
     void registerComponent(const String &id, Component *component);
     void unregisterComponent(const String &id);
+    void registerTouchableComponent(Component *component);
+    void unregisterTouchableComponent(Component *component);
+    void unregisterAllComponents();
 
     template <typename T>
     T *findComponentById(const String &id)
@@ -34,9 +42,25 @@ public:
         return nullptr;
     }
 
+    template <typename T>
+    T *findTouchableComponentAtPosition(int32_t x, int32_t y)
+    {
+        // Iterate in REVERSE - last rendered is on top
+        for (auto it = touchableComponentList.rbegin();
+             it != touchableComponentList.rend(); ++it)
+        {
+            if ((*it)->isTouched(x, y))
+            {
+                return static_cast<T *>(*it);
+            }
+        }
+        return nullptr;
+    }
+
 private:
     ComponentManager() : components() {}
     ComponentManager(const ComponentManager &) = delete;
     ComponentManager &operator=(const ComponentManager &) = delete;
     std::unordered_map<String, Component *> components;
+    std::vector<Component *> touchableComponentList;
 };

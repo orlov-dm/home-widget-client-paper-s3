@@ -4,6 +4,16 @@
 
 #include "../../icons/index.h"
 
+void Button::init()
+{
+    ComponentManager::getInstance().registerTouchableComponent(this);
+}
+
+void Button::destroy()
+{
+    ComponentManager::getInstance().unregisterTouchableComponent(this);
+}
+
 void Button::doRender()
 {
     int32_t bg = this->isPressedState ? TFT_BLACK : TFT_WHITE;
@@ -44,6 +54,27 @@ void Button::setPressed(bool isPressed)
     if (this->isPressedState != isPressed)
     {
         this->isPressedState = isPressed;
-        this->render(true);
+    }
+}
+
+void Button::touch()
+{
+    this->setPressed(true);
+    this->render(true);     // this render is just for a quick visual update
+    this->setNeedsRender(); // will be re-rendered with better quality later
+    if (this->touchCallback)
+    {
+        this->touchCallback();
+    }
+}
+
+void Button::release()
+{
+    this->setPressed(false);
+    this->render(true);     // this render is just for a quick visual update
+    this->setNeedsRender(); // will be re-rendered with better quality later
+    if (this->releaseCallback)
+    {
+        this->releaseCallback();
     }
 }

@@ -12,6 +12,7 @@
 #include "../app/component_manager.h"
 #include "../app/component_ids.h"
 
+#include "../ui/events/event_manager.h"
 #include "../ui/screens/screen_manager.h"
 #include "../ui/components/button.h"
 #include "../ui/views/schedule_view.h"
@@ -120,54 +121,15 @@ void Application::loop()
     }
 
     // Handle touch events first for responsive UI
-    Application::touchEvent();
+    EventManager::getInstance().handleTouch(&wakeupTime);
 
-    // Process pending refresh if flagged
-    if (shouldRefresh)
+    if (EventManager::getInstance().needsRender())
     {
-        shouldRefresh = false;
-        Serial.println("Starting data refresh");
-        ScreenManager::getInstance().setStatus("Refreshing data...");
         renderUI();
-        ScreenManager::getInstance().refreshScreen();
-        renderUI();
-        Serial.println("Data refresh complete");
-        return; // Return to allow next loop to handle any pending events
+        EventManager::getInstance().setNeedsRender(false);
     }
+
     delay(50); // Reduced delay for more responsive touch
-}
-
-void Application::touchEvent()
-{
-    auto t = M5.Touch.getDetail();
-
-    if (t.wasPressed())
-    {
-        wakeupTime = millis(); // Reset wakeup timer on touch
-
-        Serial.printf("Screen touched%s\n", btnRefresh == nullptr ? " (btnRefresh is null)" : "");
-        // Check if refresh button was pressed
-        if (btnRefresh && btnRefresh->isTouched(t.x, t.y))
-        {
-            btnRefresh->setPressed(true);
-            Serial.println("Refresh button pressed - flagging for refresh");
-            this->shouldRefresh = true; // Flag refresh to happen in main loop
-            renderUI();                 // Immediately show pressed state
-        }
-        return; // Return immediately to allow release event to be detected on next loop
-    }
-
-    if (t.wasReleased())
-    {
-        // Check if refresh button was released
-        if (btnRefresh && btnRefresh->isPressed())
-        {
-            Serial.println("Refresh button released");
-            btnRefresh->setPressed(false);
-            renderUI(); // Immediately show released state
-        }
-        return; // Return immediately to allow next loop to handle any pending events
-    }
 }
 
 void Application::renderUI()
