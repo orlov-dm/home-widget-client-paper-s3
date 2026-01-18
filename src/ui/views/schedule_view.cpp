@@ -13,8 +13,22 @@ ScheduleView::ScheduleView(const String &id) : ViewBase<ScheduleView>(id)
     auto buttonPrevPage = std::make_unique<Button>("Prev");
     buttonPrevPage->setHeight(20);
     this->buttonPrevPage = buttonPrevPage.get();
+    buttonPrevPage->onTouch([this]()
+                            { 
+                                if (this->currentPage > 0)
+                                {
+                                    this->currentPage--;
+                                    this->renderPage();
+                                } });
     auto buttonNextPage = std::make_unique<Button>("Next");
     buttonNextPage->setHeight(20);
+    buttonNextPage->onTouch([this]()
+                            { 
+                                if ((this->currentPage + 1) * PAGE_COUNT < this->entries.size())
+                                {
+                                    this->currentPage++;
+                                    this->renderPage();
+                                } });
     this->buttonNextPage = buttonNextPage.get();
     auto container = std::make_unique<View>(
         Size{0, 0}, LayoutDirection::Vertical);
@@ -28,9 +42,15 @@ ScheduleView::ScheduleView(const String &id) : ViewBase<ScheduleView>(id)
 
 void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
 {
-    this->container->resetChildren();
     this->entries = entries;
 
+    this->currentPage = 0;
+    this->renderPage();
+}
+
+void ScheduleView::renderPage()
+{
+    this->container->resetChildren();
     auto viewSize = this->getSize();
     Serial.printf("ScheduleView size: w=%d, h=%d\n", viewSize.w, viewSize.h);
     int32_t rowHeight = 80;
@@ -41,14 +61,17 @@ void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
     int index = 0;
     time_t utcTime = getUtcTime();
 
-    for (auto &entry : this->entries)
+    size_t recordsStartIndex = this->currentPage * PAGE_COUNT;
+    size_t recordsEndIndex = std::min(recordsStartIndex + PAGE_COUNT, this->entries.size());
+
+    for (size_t i = recordsStartIndex; i < recordsEndIndex; ++i)
     {
-        if (index >= MAX_SCHEDULE_LABELS)
+        if (i >= this->entries.size())
         {
-            Serial.println("Max schedule labels reached, skipping remaining entries");
             break;
         }
-
+        const auto &entry = this->entries[i];
+        Serial.printf("Processing entry %d: route=%d, expectedArriveTimestamp=%u\n", i, entry.route, entry.expectedArriveTimestamp);
         auto row = std::make_unique<ScheduleViewRow>(Size{0, rowHeight});
         row->setPadding(10);
         String routeStr = String(entry.route) + ":";
