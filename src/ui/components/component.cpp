@@ -4,34 +4,46 @@
 Component::Component(const Position &position, const Size &size)
     : position(position), size(size)
 {
+    this->init();
 }
 
 Component::Component(const Size &size, const String &id)
     : position({0, 0}), size(size), id(id)
 {
-    ComponentManager::getInstance().registerComponent(id, this);
+    this->init();
 }
 
 Component::Component(const String &id)
     : position({0, 0}), size({0, 0}), id(id)
 {
-    ComponentManager::getInstance().registerComponent(id, this);
+    this->init();
 }
 
 Component::Component(const Size &size)
     : position({0, 0}), size(size)
 {
+    this->init();
 }
 
 Component::Component()
     : position({0, 0}), size({0, 0})
 {
+    this->init();
 }
 
 Component::~Component()
 {
     if (id.length() > 0)
         ComponentManager::getInstance().unregisterComponent(id);
+}
+
+void Component::init()
+{
+    if (this->id.length() > 0)
+    {
+        ComponentManager::getInstance().registerComponent(this->id, this);
+    }
+    this->initAutoSizeFlags();
 }
 
 void Component::render(bool force)

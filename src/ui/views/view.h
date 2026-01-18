@@ -99,10 +99,11 @@ public:
             if (i < children.size() - 1)
                 this->renderSeparator(currentX, currentY, childSize);
 
+            int32_t effectiveSpacing = this->getEffectiveSpacing();
             if (this->direction == LayoutDirection::Vertical)
-                currentY += childSize.h + this->spacing;
+                currentY += childSize.h + effectiveSpacing;
             else
-                currentX += childSize.w + this->spacing;
+                currentX += childSize.w + effectiveSpacing;
         }
     }
 
@@ -111,44 +112,9 @@ public:
     virtual void onRefresh() {}
 
 protected:
-    Size normalizeChildSize(Component *child)
-    {
-        if (child == nullptr)
-            return {0, 0};
-        auto viewSize = this->getSize();
-        auto viewPosition = this->getPosition();
-        auto childSize = child->getSize();
-        if (direction == LayoutDirection::Vertical)
-        {
-            if (childSize.w == 0)
-            {
-                childSize.w = viewSize.w - (this->padding * 2);
-                child->setSize({childSize.w, childSize.h});
-            }
-            if (childSize.h == 0)
-            {
-                childSize.h = (viewSize.h - (this->padding * 2) - (children.size() - 1) * this->spacing) / children.size();
-                child->setSize({childSize.w, childSize.h});
-            }
-        }
-        else
-        {
-            if (childSize.h == 0)
-            {
-                childSize.h = viewSize.h - (this->padding * 2);
-                child->setSize({childSize.w, childSize.h});
-            }
-            if (childSize.w == 0)
-            {
-                childSize.w = (viewSize.w - (this->padding * 2) - (children.size() - 1) * this->spacing) / children.size();
-                child->setSize({childSize.w, childSize.h});
-            }
-        }
-        return childSize;
-    }
-
     void normalizeAllChildrenSizes()
     {
+        Serial.printf("Normalizing child sizes %s\n", this->getId().c_str());
         if (this->direction == LayoutDirection::Vertical)
         {
             int32_t totalFixedHeight = 0;
@@ -158,7 +124,7 @@ protected:
                 if (child == nullptr)
                     continue;
                 auto childSize = child->getSize();
-                if (childSize.h == 0)
+                if (child->hasAutoHeight())
                 {
                     numAutoHeightChildren++;
                 }
@@ -167,7 +133,8 @@ protected:
                     totalFixedHeight += childSize.h;
                 }
             }
-            int32_t availableHeight = this->getSize().h - (this->padding * 2) - (this->spacing * (children.size() - 1)) - totalFixedHeight;
+            int32_t effectiveSpacing = this->getEffectiveSpacing();
+            int32_t availableHeight = this->getSize().h - (this->padding * 2) - (effectiveSpacing * (children.size() - 1)) - totalFixedHeight;
             int32_t autoHeight = numAutoHeightChildren > 0 ? availableHeight / numAutoHeightChildren : 0;
 
             for (auto &child : children)
@@ -175,10 +142,13 @@ protected:
                 if (child == nullptr)
                     continue;
                 auto childSize = child->getSize();
-                auto childHeight = childSize.h == 0 ? autoHeight : childSize.h;
-                auto childWidth = childSize.w == 0 ? this->getSize().w - (this->padding * 2) : childSize.w;
+                auto childHeight = child->hasAutoHeight() ? autoHeight : childSize.h;
+                auto childWidth = child->hasAutoWidth() ? this->getSize().w - (this->padding * 2) : childSize.w;
                 child->setSize({childWidth, childHeight});
             }
+
+            Serial.printf("Auto height: %d, Available height: %d, Total fixed height: %d, Num auto height children: %d\n",
+                          autoHeight, availableHeight, totalFixedHeight, numAutoHeightChildren);
         }
         else
         {
@@ -189,7 +159,7 @@ protected:
                 if (child == nullptr)
                     continue;
                 auto childSize = child->getSize();
-                if (childSize.w == 0)
+                if (child->hasAutoWidth())
                 {
                     numAutoWidthChildren++;
                 }
@@ -198,7 +168,8 @@ protected:
                     totalFixedWidth += childSize.w;
                 }
             }
-            int32_t availableWidth = this->getSize().w - (this->padding * 2) - (this->spacing * (children.size() - 1)) - totalFixedWidth;
+            int32_t effectiveSpacing = this->getEffectiveSpacing();
+            int32_t availableWidth = this->getSize().w - (this->padding * 2) - (effectiveSpacing * (children.size() - 1)) - totalFixedWidth;
             int32_t autoWidth = numAutoWidthChildren > 0 ? availableWidth / numAutoWidthChildren : 0;
 
             for (auto &child : children)
@@ -206,16 +177,20 @@ protected:
                 if (child == nullptr)
                     continue;
                 auto childSize = child->getSize();
-                auto childWidth = childSize.w == 0 ? autoWidth : childSize.w;
-                auto childHeight = childSize.h == 0 ? this->getSize().h - (this->padding * 2) : childSize.h;
+                auto childWidth = child->hasAutoWidth() ? autoWidth : childSize.w;
+                auto childHeight = child->hasAutoHeight() ? this->getSize().h - (this->padding * 2) : childSize.h;
                 child->setSize({childWidth, childHeight});
             }
+            Serial.printf("Auto width: %d, Available width: %d, Total fixed width: %d, Num auto width children: %d\n",
+                          autoWidth, availableWidth, totalFixedWidth, numAutoWidthChildren);
         }
     }
 
     void renderSeparator(int32_t x, int32_t y, const Size &childSize)
     {
         bool hasSeparator = (this->separatorSize.w >= 0 && this->separatorSize.h >= 0);
+        Serial.printf("Rendering separator at (%d, %d) after child size (%d, %d) - Has separator: %d\n",
+                      x, y, childSize.w, childSize.h, hasSeparator);
         if (!hasSeparator)
             return;
         if (this->separatorSize.w != 0 || this->separatorSize.h != 0)
@@ -245,11 +220,12 @@ protected:
         }
 
         const auto &position = this->getPosition();
+        int32_t effectiveSpacing = this->getEffectiveSpacing();
         if (this->direction == LayoutDirection::Vertical)
         {
             M5.Display.fillRect(
                 position.x + this->padding,
-                y + childSize.h + (this->spacing / 2),
+                y + childSize.h + (effectiveSpacing - this->separatorSize.h) / 2,
                 this->separatorSize.w,
                 this->separatorSize.h,
                 TFT_DARKGRAY);
@@ -257,12 +233,28 @@ protected:
         else
         {
             M5.Display.fillRect(
-                x + childSize.w + (this->spacing / 2),
+                x + childSize.w + (effectiveSpacing - this->separatorSize.w) / 2,
                 position.y + this->padding,
                 this->separatorSize.w,
                 this->separatorSize.h,
                 TFT_DARKGRAY);
         }
+    }
+
+    void recalculateLayout()
+    {
+        setNeedsRender();
+    }
+
+    int32_t getEffectiveSpacing() const
+    {
+        if (this->spacing != 0)
+            return this->spacing;
+        if (this->direction == LayoutDirection::Vertical && this->separatorSize.h > 0)
+            return this->separatorSize.h;
+        if (this->direction == LayoutDirection::Horizontal && this->separatorSize.w > 0)
+            return this->separatorSize.w;
+        return 0;
     }
 
 private:

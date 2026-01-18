@@ -18,7 +18,6 @@ public:
         scheduleView->setBackgroundColor(TFT_WHITE);
         scheduleView->setSpacing(5);
         scheduleView->setPadding(10);
-        scheduleView->setSeparatorSize({0, 2});
         this->scheduleView = scheduleView.get();
         this->addChild(std::move(scheduleView));
 

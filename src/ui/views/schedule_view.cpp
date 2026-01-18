@@ -6,10 +6,29 @@
 #include <utils/datetime_utils.h>
 
 #include "../components/label.h"
+#include "../components/button.h"
+
+ScheduleView::ScheduleView(const String &id) : ViewBase<ScheduleView>(id)
+{
+    auto buttonPrevPage = std::make_unique<Button>("Prev");
+    buttonPrevPage->setHeight(20);
+    this->buttonPrevPage = buttonPrevPage.get();
+    auto buttonNextPage = std::make_unique<Button>("Next");
+    buttonNextPage->setHeight(20);
+    this->buttonNextPage = buttonNextPage.get();
+    auto container = std::make_unique<View>(
+        Size{0, 0}, LayoutDirection::Vertical);
+    container->setSeparatorSize({0, 2});
+    this->container = container.get();
+
+    this->addChild(std::move(buttonPrevPage));
+    this->addChild(std::move(container));
+    this->addChild(std::move(buttonNextPage));
+}
 
 void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
 {
-    this->resetChildren();
+    this->container->resetChildren();
     this->entries = entries;
 
     auto viewSize = this->getSize();
@@ -50,7 +69,7 @@ void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
             Size{viewSize.w - (routeLabelWidth + 30 + inLabelWidth + timeLabelWidth + minLabelWidth + 20), 0},
             TextSize::LARGE));
 
-        this->addChild(std::move(row));
+        this->container->addChild(std::move(row));
 
         ++index;
     }

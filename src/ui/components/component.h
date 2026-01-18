@@ -41,27 +41,44 @@ public:
     void setSize(const Size &s)
     {
         size = s;
+        this->initAutoSizeFlags();
         setNeedsRender();
     }
 
     void setWidth(int32_t w)
     {
         size.w = w;
+        this->initAutoSizeFlags();
         setNeedsRender();
     }
 
     void setHeight(int32_t h)
     {
         size.h = h;
+        this->initAutoSizeFlags();
         setNeedsRender();
     }
+
+    String getId() const { return id; }
+
+    int32_t getWidth() const { return size.w; }
+    int32_t getHeight() const { return size.h; }
 
     void setNeedsRender();
 
     void setParent(Component *p);
 
+    bool hasAutoWidth() const { return hasAutoWidthEnabled; }
+    bool hasAutoHeight() const { return hasAutoHeightEnabled; }
+
 protected:
     virtual void doRender() = 0;
+    void init();
+    void initAutoSizeFlags()
+    {
+        this->hasAutoWidthEnabled = (size.w == 0);
+        this->hasAutoHeightEnabled = (size.h == 0);
+    }
 
 private:
     Position position = {0, 0};
@@ -69,4 +86,6 @@ private:
     bool isRendered = false;
     String id = "";
     Component *parent = nullptr;
+    bool hasAutoWidthEnabled = false;
+    bool hasAutoHeightEnabled = false;
 };

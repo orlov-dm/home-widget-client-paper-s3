@@ -5,6 +5,7 @@
 
 #include "../types.h"
 #include "view.h"
+#include "../components/button.h"
 
 const uint8_t MAX_SCHEDULE_LABELS = 10;
 
@@ -23,12 +24,14 @@ public:
 class ScheduleView : public ViewBase<ScheduleView>
 {
 public:
-    ScheduleView(const Position &pos, const Size &size) : ViewBase<ScheduleView>(pos, size) {};
-    ScheduleView(const Size &size) : ViewBase<ScheduleView>(size) {};
-    ScheduleView(const String &id) : ViewBase<ScheduleView>(id) {};
+    ScheduleView(const String &id);
 
     void setScheduleData(const std::vector<ScheduleEntry> &entries);
 
 private:
     std::vector<ScheduleEntry> entries;
+
+    View *container = nullptr;
+    Button *buttonNextPage = nullptr;
+    Button *buttonPrevPage = nullptr;
 };
