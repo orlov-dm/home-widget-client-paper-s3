@@ -63,7 +63,7 @@ void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
 {
     this->entries = entries;
 
-    this->currentPage = 0;
+    this->resetPagination();
     this->renderPage();
 }
 
@@ -136,4 +136,24 @@ void ScheduleView::renderPage()
         ++index;
     }
     this->container->setNeedsRender();
+}
+
+void ScheduleView::resetPagination()
+{
+    this->currentPage = 0;
+    if (this->buttonPrevPage)
+    {
+        this->buttonPrevPage->setDisabled(true);
+    }
+    if (this->buttonNextPage)
+    {
+        if (this->entries.size() > PAGE_COUNT)
+        {
+            this->buttonNextPage->setDisabled(false);
+        }
+        else
+        {
+            this->buttonNextPage->setDisabled(true);
+        }
+    }
 }

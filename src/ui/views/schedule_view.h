@@ -30,6 +30,7 @@ public:
 
 protected:
     void renderPage();
+    void resetPagination();
 
 private:
     std::vector<ScheduleEntry> entries;
