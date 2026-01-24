@@ -60,6 +60,7 @@ void Button::setPressed(bool isPressed)
 
 void Button::touch()
 {
+    Serial.println("Button touched: " + this->getId());
     this->setPressed(true);
     this->render(true);     // this render is just for a quick visual update
     this->setNeedsRender(); // will be re-rendered with better quality later
@@ -71,6 +72,7 @@ void Button::touch()
 
 void Button::release()
 {
+    Serial.println("Button released: " + this->getId());
     this->setPressed(false);
     this->render(true);     // this render is just for a quick visual update
     this->setNeedsRender(); // will be re-rendered with better quality later

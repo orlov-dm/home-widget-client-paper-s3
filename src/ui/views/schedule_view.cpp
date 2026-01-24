@@ -10,8 +10,10 @@
 
 ScheduleView::ScheduleView(const String &id) : ViewBase<ScheduleView>(id)
 {
+    auto buttonLayout = std::make_unique<View>(
+        Size{0, 40}, LayoutDirection::Horizontal);
+    buttonLayout->setSpacing(10);
     auto buttonPrevPage = std::make_unique<Button>("Prev");
-    buttonPrevPage->setHeight(20);
     this->buttonPrevPage = buttonPrevPage.get();
     buttonPrevPage->onTouch([this]()
                             { 
@@ -21,7 +23,6 @@ ScheduleView::ScheduleView(const String &id) : ViewBase<ScheduleView>(id)
                                     this->renderPage();
                                 } });
     auto buttonNextPage = std::make_unique<Button>("Next");
-    buttonNextPage->setHeight(20);
     buttonNextPage->onTouch([this]()
                             { 
                                 if ((this->currentPage + 1) * PAGE_COUNT < this->entries.size())
@@ -35,9 +36,10 @@ ScheduleView::ScheduleView(const String &id) : ViewBase<ScheduleView>(id)
     container->setSeparatorSize({0, 2});
     this->container = container.get();
 
-    this->addChild(std::move(buttonPrevPage));
+    buttonLayout->addChild(std::move(buttonPrevPage));
+    buttonLayout->addChild(std::move(buttonNextPage));
     this->addChild(std::move(container));
-    this->addChild(std::move(buttonNextPage));
+    this->addChild(std::move(buttonLayout));
 }
 
 void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
@@ -51,7 +53,16 @@ void ScheduleView::setScheduleData(const std::vector<ScheduleEntry> &entries)
 void ScheduleView::renderPage()
 {
     this->container->resetChildren();
-    auto viewSize = this->getSize();
+
+    if (this->entries.empty())
+    {
+        auto noDataLabel = std::make_unique<Label>("No schedule data available", Size{0, 50}, TextSize::LARGE);
+        this->container->addChild(std::move(noDataLabel));
+        this->setNeedsRender();
+        return;
+    }
+
+    auto viewSize = this->container->getSize();
     Serial.printf("ScheduleView size: w=%d, h=%d\n", viewSize.w, viewSize.h);
     int32_t rowHeight = 80;
     int32_t routeLabelWidth = 90;
@@ -73,28 +84,39 @@ void ScheduleView::renderPage()
         const auto &entry = this->entries[i];
         Serial.printf("Processing entry %d: route=%d, expectedArriveTimestamp=%u\n", i, entry.route, entry.expectedArriveTimestamp);
         auto row = std::make_unique<ScheduleViewRow>(Size{0, rowHeight});
+        row->setName("ScheduleRow_" + String(index));
         row->setPadding(10);
         String routeStr = String(entry.route) + ":";
         Serial.println("Route: " + routeStr + ", Expected Arrival: " + String(entry.expectedArriveTimestamp));
-        row->addChild(std::make_unique<Label>(routeStr, Size{routeLabelWidth, 0}, TextSize::LARGE));
+        auto routeLabel = std::make_unique<Label>(routeStr, Size{routeLabelWidth, 0}, TextSize::LARGE);
+        routeLabel->setName("RouteLabel_" + String(index));
+        row->addChild(std::move(routeLabel));
 
-        row->addChild(std::make_unique<Label>("In", Size{inLabelWidth, 0}, TextSize::MEDIUM));
+        auto inLabel = std::make_unique<Label>("In", Size{inLabelWidth, 0}, TextSize::MEDIUM);
+        inLabel->setName("InLabel_" + String(index));
+        row->addChild(std::move(inLabel));
 
         auto expectedArriveTimestamp = entry.expectedArriveTimestamp;
         int secondsDiff = expectedArriveTimestamp - utcTime;
         String secondsDiffString = String(secondsDiff / 60);
-        row->addChild(std::make_unique<Label>(secondsDiffString, Size{timeLabelWidth, 0}, TextSize::LARGE));
+        auto secondsDiffLabel = std::make_unique<Label>(secondsDiffString, Size{timeLabelWidth, 0}, TextSize::LARGE);
+        secondsDiffLabel->setName("SecondsDiffLabel_" + String(index));
+        row->addChild(std::move(secondsDiffLabel));
 
-        row->addChild(std::make_unique<Label>("min", Size{minLabelWidth, 0}, TextSize::MEDIUM));
+        auto minLabel = std::make_unique<Label>("min", Size{minLabelWidth, 0}, TextSize::MEDIUM);
+        minLabel->setName("MinLabel_" + String(index));
+        row->addChild(std::move(minLabel));
 
-        row->addChild(std::make_unique<Label>(
+        auto expectedTimeLabel = std::make_unique<Label>(
             formatTimestampToLocalTimeString(expectedArriveTimestamp, "%H:%M"),
             Size{viewSize.w - (routeLabelWidth + 30 + inLabelWidth + timeLabelWidth + minLabelWidth + 20), 0},
-            TextSize::LARGE));
+            TextSize::LARGE);
+        expectedTimeLabel->setName("ExpectedTimeLabel_" + String(index));
+        row->addChild(std::move(expectedTimeLabel));
 
         this->container->addChild(std::move(row));
 
         ++index;
     }
-    this->setNeedsRender();
+    this->container->setNeedsRender();
 }

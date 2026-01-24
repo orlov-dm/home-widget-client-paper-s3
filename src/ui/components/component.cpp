@@ -1,4 +1,5 @@
 #include "component.h"
+
 #include "../../app/component_manager.h"
 
 Component::Component(const Position &position, const Size &size)
@@ -48,25 +49,40 @@ void Component::init()
 
 void Component::render(bool force)
 {
-    if (this->isRendered && !force)
+    const auto needsRender = this->needsRenderCheck() || force;
+    if (!needsRender)
         return;
+
+    Serial.println("Rendering Component: " + this->getName() + " (" + this->getId() + ")");
 
     this->doRender();
     this->isRendered = true;
+    this->hasChildThatNeedsRender = false;
 }
 
 bool Component::isTouched(int32_t x, int32_t y) const
 {
-    return (x > position.x && x < position.x + size.w &&
-            y > position.y && y < position.y + size.h);
+    return (x > this->position.x && x < this->position.x + this->size.w &&
+            y > this->position.y && y < this->position.y + this->size.h);
 }
 
 void Component::setNeedsRender()
 {
     this->isRendered = false;
-    if (this->parent)
+    this->markParentsChildNeedsRender();
+}
+
+void Component::markParentsChildNeedsRender()
+{
+    Component *current = this->parent;
+    while (current != nullptr)
     {
-        this->parent->setNeedsRender();
+        if (current->hasChildThatNeedsRender)
+        {
+            break; // Already marked, no need to continue
+        }
+        current->hasChildThatNeedsRender = true;
+        current = current->parent;
     }
 }
 

@@ -23,11 +23,10 @@ public:
 
     void setValue(const String &newValue)
     {
-        if (this->value != newValue)
-        {
-            this->value = newValue;
-            this->setNeedsRender();
-        }
+        if (this->value == newValue)
+            return;
+        this->value = newValue;
+        this->setNeedsRender();
     }
     void doRender() override;
 

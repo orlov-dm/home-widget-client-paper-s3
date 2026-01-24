@@ -30,6 +30,8 @@ public:
 
     Derived *setSpacing(int32_t s)
     {
+        if (this->spacing == s)
+            return static_cast<Derived *>(this);
         this->spacing = s;
         setNeedsRender();
         return static_cast<Derived *>(this);
@@ -37,6 +39,8 @@ public:
 
     Derived *setSeparatorSize(const Size &s)
     {
+        if (this->separatorSize.w == s.w && this->separatorSize.h == s.h)
+            return static_cast<Derived *>(this);
         this->separatorSize = s;
         setNeedsRender();
         return static_cast<Derived *>(this);
@@ -44,6 +48,8 @@ public:
 
     Derived *setBackgroundColor(uint32_t color)
     {
+        if (this->backgroundColor == color)
+            return static_cast<Derived *>(this);
         this->backgroundColor = color;
         setNeedsRender();
         return static_cast<Derived *>(this);
@@ -51,6 +57,8 @@ public:
 
     Derived *setPadding(int32_t p)
     {
+        if (this->padding == p)
+            return static_cast<Derived *>(this);
         this->padding = p;
         setNeedsRender();
         return static_cast<Derived *>(this);
@@ -58,6 +66,9 @@ public:
 
     void resetChildren()
     {
+        if (children.empty())
+            return;
+
         children.clear();
         setNeedsRender();
     }
@@ -72,9 +83,9 @@ public:
         setNeedsRender();
     }
 
-    virtual void doRenderChild(Component &child)
+    virtual void doRenderChild(Component &child, bool forceRender = false)
     {
-        child.render();
+        child.render(forceRender);
     }
 
     void doRender() override
@@ -84,17 +95,33 @@ public:
         int32_t currentY = position.y + this->padding;
         int32_t currentX = position.x + this->padding;
 
-        M5.Display.fillRect(position.x, position.y, size.w, size.h, this->backgroundColor);
+        bool viewNeedsFullRender = !this->getIsRendered();
+
+        // Only clear background if THIS view needs rendering, not just children
+        if (viewNeedsFullRender)
+        {
+            Serial.println("Rendering View: " + this->getName() + " (" + this->getId() + ")");
+            M5.Display.fillRect(position.x, position.y, size.w, size.h, this->backgroundColor);
+        }
 
         this->normalizeAllChildrenSizes();
         for (int i = 0; i < children.size(); i++)
         {
             auto &child = children[i];
-            if (child == nullptr)
+            if (child == nullptr || !child->isVisible())
                 continue;
             child->setPosition({currentX, currentY});
             auto childSize = child.get()->getSize();
-            this->doRenderChild(*child);
+
+            // If parent needs full render, force render all children. Otherwise only render those that need it
+            if (viewNeedsFullRender)
+            {
+                this->doRenderChild(*child, true); // Force render since background was cleared
+            }
+            else if (child->needsRenderCheck())
+            {
+                this->doRenderChild(*child);
+            }
 
             if (i < children.size() - 1)
                 this->renderSeparator(currentX, currentY, childSize);
@@ -114,14 +141,13 @@ public:
 protected:
     void normalizeAllChildrenSizes()
     {
-        Serial.printf("Normalizing child sizes %s\n", this->getId().c_str());
         if (this->direction == LayoutDirection::Vertical)
         {
             int32_t totalFixedHeight = 0;
             int32_t numAutoHeightChildren = 0;
             for (auto &child : children)
             {
-                if (child == nullptr)
+                if (child == nullptr || !child->isVisible())
                     continue;
                 auto childSize = child->getSize();
                 if (child->hasAutoHeight())
@@ -139,16 +165,13 @@ protected:
 
             for (auto &child : children)
             {
-                if (child == nullptr)
+                if (child == nullptr || !child->isVisible())
                     continue;
                 auto childSize = child->getSize();
                 auto childHeight = child->hasAutoHeight() ? autoHeight : childSize.h;
                 auto childWidth = child->hasAutoWidth() ? this->getSize().w - (this->padding * 2) : childSize.w;
                 child->setSize({childWidth, childHeight});
             }
-
-            Serial.printf("Auto height: %d, Available height: %d, Total fixed height: %d, Num auto height children: %d\n",
-                          autoHeight, availableHeight, totalFixedHeight, numAutoHeightChildren);
         }
         else
         {
@@ -156,7 +179,7 @@ protected:
             int32_t numAutoWidthChildren = 0;
             for (auto &child : children)
             {
-                if (child == nullptr)
+                if (child == nullptr || !child->isVisible())
                     continue;
                 auto childSize = child->getSize();
                 if (child->hasAutoWidth())
@@ -174,23 +197,19 @@ protected:
 
             for (auto &child : children)
             {
-                if (child == nullptr)
+                if (child == nullptr || !child->isVisible())
                     continue;
                 auto childSize = child->getSize();
                 auto childWidth = child->hasAutoWidth() ? autoWidth : childSize.w;
                 auto childHeight = child->hasAutoHeight() ? this->getSize().h - (this->padding * 2) : childSize.h;
                 child->setSize({childWidth, childHeight});
             }
-            Serial.printf("Auto width: %d, Available width: %d, Total fixed width: %d, Num auto width children: %d\n",
-                          autoWidth, availableWidth, totalFixedWidth, numAutoWidthChildren);
         }
     }
 
     void renderSeparator(int32_t x, int32_t y, const Size &childSize)
     {
         bool hasSeparator = (this->separatorSize.w >= 0 && this->separatorSize.h >= 0);
-        Serial.printf("Rendering separator at (%d, %d) after child size (%d, %d) - Has separator: %d\n",
-                      x, y, childSize.w, childSize.h, hasSeparator);
         if (!hasSeparator)
             return;
         if (this->separatorSize.w != 0 || this->separatorSize.h != 0)
@@ -239,11 +258,6 @@ protected:
                 this->separatorSize.h,
                 TFT_DARKGRAY);
         }
-    }
-
-    void recalculateLayout()
-    {
-        setNeedsRender();
     }
 
     int32_t getEffectiveSpacing() const

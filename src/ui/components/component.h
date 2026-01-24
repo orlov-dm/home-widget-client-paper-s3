@@ -1,5 +1,7 @@
 #pragma once
 
+#include <M5Unified.hpp>
+
 #include "../types.h"
 
 class Component
@@ -22,24 +24,32 @@ public:
 
     void setPosition(const Position &pos)
     {
+        if (position.x == pos.x && position.y == pos.y)
+            return;
         position = pos;
         setNeedsRender();
     }
 
     void setX(int32_t x)
     {
+        if (position.x == x)
+            return;
         position.x = x;
         setNeedsRender();
     }
 
     void setY(int32_t y)
     {
+        if (position.y == y)
+            return;
         position.y = y;
         setNeedsRender();
     }
 
     void setSize(const Size &s)
     {
+        if (size.w == s.w && size.h == s.h)
+            return;
         size = s;
         this->initAutoSizeFlags();
         setNeedsRender();
@@ -47,6 +57,8 @@ public:
 
     void setWidth(int32_t w)
     {
+        if (size.w == w)
+            return;
         size.w = w;
         this->initAutoSizeFlags();
         setNeedsRender();
@@ -54,12 +66,16 @@ public:
 
     void setHeight(int32_t h)
     {
+        if (size.h == h)
+            return;
         size.h = h;
         this->initAutoSizeFlags();
         setNeedsRender();
     }
 
     String getId() const { return id; }
+    String getName() const { return name; }
+    void setName(const String &n) { name = n; }
 
     int32_t getWidth() const { return size.w; }
     int32_t getHeight() const { return size.h; }
@@ -71,6 +87,23 @@ public:
     bool hasAutoWidth() const { return hasAutoWidthEnabled; }
     bool hasAutoHeight() const { return hasAutoHeightEnabled; }
 
+    void setVisible(bool visible)
+    {
+        if (this->isVisibleValue == visible)
+            return;
+        this->isVisibleValue = visible;
+        // Visibility changes require parent to fully re-render to clear old graphics
+        if (this->parent)
+        {
+            this->parent->setNeedsRender();
+        }
+    }
+
+    bool isVisible() const { return this->isVisibleValue; }
+
+    bool needsRenderCheck() const { return !this->isRendered || this->hasChildThatNeedsRender; }
+    bool getIsRendered() const { return this->isRendered; }
+
 protected:
     virtual void doRender() = 0;
     void init();
@@ -80,7 +113,11 @@ protected:
         this->hasAutoHeightEnabled = (size.h == 0);
     }
 
+    bool hasChildThatNeedsRender = false;
+
 private:
+    void markParentsChildNeedsRender();
+
     Position position = {0, 0};
     Size size = {0, 0};
     bool isRendered = false;
@@ -88,4 +125,6 @@ private:
     Component *parent = nullptr;
     bool hasAutoWidthEnabled = false;
     bool hasAutoHeightEnabled = false;
+    bool isVisibleValue = true;
+    String name = "";
 };

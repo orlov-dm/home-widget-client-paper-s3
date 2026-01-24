@@ -61,9 +61,10 @@ T *ComponentManager::findTouchableComponentAtPosition(int32_t x, int32_t y)
     for (auto it = touchableComponentList.rbegin();
          it != touchableComponentList.rend(); ++it)
     {
-        if ((*it)->isTouched(x, y))
+        auto component = *it;
+        if (component->isVisible() && component->isTouched(x, y))
         {
-            return static_cast<T *>(*it);
+            return static_cast<T *>(component);
         }
     }
     return nullptr;
