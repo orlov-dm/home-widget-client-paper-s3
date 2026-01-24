@@ -13,9 +13,9 @@ ScheduleView::ScheduleView(const String &id) : ViewBase<ScheduleView>(id)
     auto buttonLayout = std::make_unique<View>(
         Size{0, 40}, LayoutDirection::Horizontal);
     buttonLayout->setSpacing(10);
-    auto buttonPrevPage = std::make_unique<Button>("Prev");
+    auto buttonPrevPage = std::make_unique<Button>("<");
     this->buttonPrevPage = buttonPrevPage.get();
-    auto buttonNextPage = std::make_unique<Button>("Next");
+    auto buttonNextPage = std::make_unique<Button>(">");
     this->buttonNextPage = buttonNextPage.get();
     buttonPrevPage->onTouch([this]()
                             { 
