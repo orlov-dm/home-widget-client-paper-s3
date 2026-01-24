@@ -15,22 +15,39 @@ ScheduleView::ScheduleView(const String &id) : ViewBase<ScheduleView>(id)
     buttonLayout->setSpacing(10);
     auto buttonPrevPage = std::make_unique<Button>("Prev");
     this->buttonPrevPage = buttonPrevPage.get();
+    auto buttonNextPage = std::make_unique<Button>("Next");
+    this->buttonNextPage = buttonNextPage.get();
     buttonPrevPage->onTouch([this]()
                             { 
                                 if (this->currentPage > 0)
                                 {
                                     this->currentPage--;
+                                    if (this->currentPage == 0)
+                                    {
+                                        this->buttonPrevPage->setDisabled(true);
+                                    }
+                                    if (this->buttonNextPage->isDisabled())
+                                    {
+                                        this->buttonNextPage->setDisabled(false);
+                                    }
                                     this->renderPage();
                                 } });
-    auto buttonNextPage = std::make_unique<Button>("Next");
     buttonNextPage->onTouch([this]()
                             { 
                                 if ((this->currentPage + 1) * PAGE_COUNT < this->entries.size())
                                 {
                                     this->currentPage++;
+                                    if ((this->currentPage + 1) * PAGE_COUNT >= this->entries.size())
+                                    {
+                                        this->buttonNextPage->setDisabled(true);
+                                    }
+                                    if (this->buttonPrevPage->isDisabled())
+                                    {
+                                        this->buttonPrevPage->setDisabled(false);
+                                    }
                                     this->renderPage();
                                 } });
-    this->buttonNextPage = buttonNextPage.get();
+
     auto container = std::make_unique<View>(
         Size{0, 0}, LayoutDirection::Vertical);
     container->setSeparatorSize({0, 2});

@@ -19,6 +19,11 @@ void Button::doRender()
 {
     int32_t bg = this->isPressedState ? TFT_BLACK : TFT_WHITE;
     int32_t fg = this->isPressedState ? TFT_WHITE : TFT_BLACK;
+    if (this->isDisabled())
+    {
+        bg = TFT_LIGHTGREY;
+        fg = TFT_DARKGREY;
+    }
 
     auto pos = this->getPosition();
     auto size = this->getSize();
@@ -60,6 +65,11 @@ void Button::setPressed(bool isPressed)
 
 void Button::touch()
 {
+    if (this->isDisabled())
+    {
+        Serial.println("Button touch ignored, button is disabled: " + this->getId());
+        return;
+    }
     Serial.println("Button touched: " + this->getId());
     this->setPressed(true);
     this->render(true);     // this render is just for a quick visual update
@@ -72,6 +82,11 @@ void Button::touch()
 
 void Button::release()
 {
+    if (this->isDisabled() && !this->isPressedState)
+    {
+        Serial.println("Button release ignored, button is disabled: " + this->getId());
+        return;
+    }
     Serial.println("Button released: " + this->getId());
     this->setPressed(false);
     this->render(true);     // this render is just for a quick visual update

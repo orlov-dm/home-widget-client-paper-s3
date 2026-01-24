@@ -104,6 +104,15 @@ public:
     bool needsRenderCheck() const { return !this->isRendered || this->hasChildThatNeedsRender; }
     bool getIsRendered() const { return this->isRendered; }
 
+    bool isDisabled() const { return this->isDisabledValue; }
+    void setDisabled(bool disabled)
+    {
+        if (this->isDisabledValue == disabled)
+            return;
+        this->isDisabledValue = disabled;
+        setNeedsRender();
+    }
+
 protected:
     virtual void doRender() = 0;
     void init();
@@ -127,4 +136,6 @@ private:
     bool hasAutoHeightEnabled = false;
     bool isVisibleValue = true;
     String name = "";
+
+    bool isDisabledValue = false;
 };
