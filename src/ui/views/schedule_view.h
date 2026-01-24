@@ -7,7 +7,7 @@
 #include "view.h"
 #include "../components/button.h"
 
-const uint8_t PAGE_COUNT = 10;
+const uint8_t PAGE_COUNT = 11;
 
 struct ScheduleEntry
 {

@@ -1,5 +1,15 @@
 #include "screen_manager.h"
 
+#include "../../app/component_ids.h"
+
+void ScreenManager::init()
+{
+    this->statusBar = std::make_unique<StatusBar>(Position{0, 0}, Size{M5.Display.width(), STATUS_BAR_HEIGHT});
+    this->navBar = std::make_unique<NavBar>(ComponentID::NAV_BAR);
+    this->navBar->setPosition({0, M5.Display.height() - NAV_BAR_HEIGHT});
+    this->navBar->setSize({M5.Display.width(), NAV_BAR_HEIGHT});
+}
+
 void ScreenManager::renderCurrentScreen()
 {
     this->statusBar->render();
@@ -7,6 +17,7 @@ void ScreenManager::renderCurrentScreen()
     {
         this->currentScreen->render();
     }
+    this->navBar->render();
 }
 
 void ScreenManager::showScreen(ScreenID screenId)

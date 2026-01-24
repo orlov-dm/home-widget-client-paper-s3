@@ -41,7 +41,18 @@ void Button::doRender()
     {
         auto iconData = getIconData(this->icon);
         if (iconData)
-            M5.Display.drawBitmap(pos.x + 5, pos.y + 5, iconData, 32, 28, fg, bg);
+        {
+            Serial.println("Drawing icon for button: " + this->getId() + " " + String(this->icon) + " fg=" + String(fg) + " bg=" + String(bg));
+            if (hasLabel)
+            {
+                M5.Display.drawBitmap(pos.x + 5, pos.y + 5, iconData, 32, 32, fg, bg);
+            }
+            else
+            {
+                // Center icon if no label
+                M5.Display.drawBitmap(pos.x + (size.w - 32) / 2, pos.y + (size.h - 32) / 2, iconData, 32, 32, fg, bg);
+            }
+        }
     }
 
     if (hasLabel)

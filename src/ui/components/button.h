@@ -19,6 +19,14 @@ public:
     void setPressed(bool isPressed);
     bool isPressed() const { return this->isPressedState; }
 
+    void setIcon(Icon newIcon)
+    {
+        if (this->icon == newIcon)
+            return;
+        this->icon = newIcon;
+        this->setNeedsRender();
+    }
+
     void touch();
     void release();
 

@@ -81,7 +81,7 @@ void ScheduleView::renderPage()
 
     auto viewSize = this->container->getSize();
     Serial.printf("ScheduleView size: w=%d, h=%d\n", viewSize.w, viewSize.h);
-    int32_t rowHeight = 80;
+    int32_t rowHeight = 70;
     int32_t routeLabelWidth = 90;
     int32_t inLabelWidth = 60;
     int32_t timeLabelWidth = 70;

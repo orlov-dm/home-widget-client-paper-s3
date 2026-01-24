@@ -6,8 +6,10 @@
 #include "const.h"
 #include "../views/view.h"
 #include "../views/status_bar.h"
+#include "../views/nav_bar.h"
 
 constexpr int32_t STATUS_BAR_HEIGHT = 40;
+constexpr int32_t NAV_BAR_HEIGHT = 60;
 class ScreenManager
 {
 public:
@@ -17,10 +19,7 @@ public:
         return instance;
     }
 
-    void init()
-    {
-        this->statusBar = std::make_unique<StatusBar>(Position{0, 0}, Size{M5.Display.width(), STATUS_BAR_HEIGHT});
-    }
+    void init();
 
     void renderCurrentScreen();
     void showScreen(ScreenID screenId);
@@ -36,7 +35,7 @@ public:
 protected:
     const int32_t getAvailableHeight() const
     {
-        return M5.Display.height() - STATUS_BAR_HEIGHT;
+        return M5.Display.height() - STATUS_BAR_HEIGHT - NAV_BAR_HEIGHT;
     }
 
 private:
@@ -51,4 +50,5 @@ private:
     View *currentScreen = nullptr;
 
     std::unique_ptr<StatusBar> statusBar = nullptr;
+    std::unique_ptr<NavBar> navBar = nullptr;
 };
