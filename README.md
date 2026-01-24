@@ -4,5 +4,7 @@ Compile:
 
 TODO:
 - [ ] Padding (top/left/right/bottom) + (top/bottom) + (left/right)
+- [ ] Add weather screen
+- [x] Navigation bar
 - [x] Introduce Screen view to store all views internally
-- [ ] Component event manager
+- [x] Component event manager
