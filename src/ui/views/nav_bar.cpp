@@ -20,7 +20,7 @@ NavBar::NavBar(const String &id) : View(id, LayoutDirection::Horizontal)
 
     auto weatherViewBtn = std::make_unique<Button>("");
     weatherViewBtn->setName("WeatherViewButton");
-    // weatherViewBtn->setIcon(Icon::ICON_WEATHER); // TODO: Add weather icon
+    weatherViewBtn->setIcon(Icon::ICON_WEATHER_MAIN);
     weatherViewBtn->onTouch([]()
                             {
                                 Serial.println("NavBar: Weather View button pressed");
