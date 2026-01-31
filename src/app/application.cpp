@@ -17,6 +17,7 @@
 #include "../ui/components/button.h"
 #include "../ui/views/schedule_view.h"
 #include "../ui/screens/schedule_screen.h"
+#include <ui/screens/weather_screen.h>
 
 const uint32_t AWAKE_DURATION = 120000; // 2 minutes in milliseconds (how long to stay awake)
 
@@ -84,6 +85,7 @@ void Application::setup()
     }
 
     screenManager.addScreen(std::make_unique<ScheduleScreen>(ComponentID::SCHEDULE_SCREEN), ScreenID::TRANSPORT_SCHEDULE);
+    screenManager.addScreen(std::make_unique<WeatherScreen>(ComponentID::WEATHER_SCREEN), ScreenID::WEATHER);
     screenManager.showScreen(ScreenID::TRANSPORT_SCHEDULE);
 
     renderUI();

@@ -20,20 +20,6 @@ public:
         scheduleView->setPadding(10);
         this->scheduleView = scheduleView.get();
         this->addChild(std::move(scheduleView));
-
-        // auto btnRefresh = std::make_unique<Button>(
-        //     "",
-        //     Size{40, 40},
-        //     ComponentID::REFRESH_BUTTON,
-        //     Icon::ICON_REFRESH);
-        // Button *btnRefreshPtr = btnRefresh.get();   // Get raw pointer before move
-        // btnRefresh->onTouch([this, btnRefreshPtr]() // Capture the pointer
-        //                     {
-        //                         Serial.println("Refresh button pressed");
-        //                         ScreenManager::getInstance().setStatus("Refreshing data...");
-        //                         this->onRefresh();
-        //                     });
-        // this->addChild(std::move(btnRefresh));
     };
 
     virtual ~ScheduleScreen() {}

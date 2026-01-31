@@ -4,3 +4,23 @@
 #define SECRET_API_URL "https://api-url.dev/api"
 #define SECRET_CF_ACCESS_CLIENT_ID "test_cf_client_id"
 #define SECRET_CF_ACCESS_CLIENT_VALUE: "test_cf_client_value"
+
+constexpr char *CLOUDFLARE_ROOT_CA =
+    "-----BEGIN CERTIFICATE-----\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "***\n"
+    "-----END CERTIFICATE-----\n";

@@ -15,6 +15,21 @@ void Label::doRender()
     int fontHeight = 8 * this->textSize;
     int yOffset = (size.h - fontHeight) / 2;
 
-    M5.Display.setCursor(pos.x + 10, pos.y + yOffset);
+    // Calculate horizontal position based on alignment
+    int textWidth = M5.Display.textWidth(this->value);
+    if (this->alignment == Alignment::LEFT)
+    {
+        M5.Display.setCursor(pos.x + 10, pos.y + yOffset);
+    }
+    else if (this->alignment == Alignment::CENTER)
+    {
+        int textX = pos.x + (size.w - textWidth) / 2;
+        M5.Display.setCursor(textX, pos.y + yOffset);
+    }
+    else if (this->alignment == Alignment::RIGHT)
+    {
+        int textX = pos.x + size.w - textWidth - 10;
+        M5.Display.setCursor(textX, pos.y + yOffset);
+    }
     M5.Display.print(this->value);
 }

@@ -1,9 +1,9 @@
-// api_client.h
 #pragma once
 
 #include "base_request.h"
 #include "../secrets.h"
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include "utils/wifi_utils.h"
 
 class ApiClient
@@ -37,7 +37,7 @@ public:
     // Start connection
     Serial.println(request->getUrl() + " start");
     String fullUrl = SECRET_API_URL + request->getUrl();
-    this->http.begin(fullUrl);
+    this->http.begin(this->wifiClient, fullUrl);
     this->http.addHeader("Content-Type", "application/json");
     this->http.addHeader("x-api-key", SECRET_API_KEY);
     this->http.addHeader("CF-Access-Client-Id", SECRET_CF_ACCESS_CLIENT_ID);
@@ -88,9 +88,14 @@ public:
   }
 
 private:
-  ApiClient() {}
+  ApiClient()
+  {
+    // Use HTTPS with encryption but skip certificate validation
+    wifiClient.setInsecure();
+  }
   ApiClient(const ApiClient &) = delete;
   ApiClient &operator=(const ApiClient &) = delete;
 
+  WiFiClientSecure wifiClient;
   HTTPClient http;
 };

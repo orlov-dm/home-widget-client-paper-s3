@@ -8,7 +8,15 @@ enum TextSize
 {
     SMALL = 2,
     MEDIUM = 3,
-    LARGE = 5
+    LARGE = 5,
+    XLARGE = 7
+};
+
+enum Alignment
+{
+    LEFT,
+    CENTER,
+    RIGHT
 };
 
 class Label : public Component
@@ -28,9 +36,18 @@ public:
         this->value = newValue;
         this->setNeedsRender();
     }
+    void setAlignment(Alignment align)
+    {
+        if (this->alignment == align)
+            return;
+        this->alignment = align;
+        this->setNeedsRender();
+    }
+
     void doRender() override;
 
 private:
     String value;
     TextSize textSize = TextSize::SMALL;
+    Alignment alignment = Alignment::LEFT;
 };

@@ -3,5 +3,5 @@
 enum class ScreenID
 {
     TRANSPORT_SCHEDULE,
-    // WEATHER,
+    WEATHER,
 };

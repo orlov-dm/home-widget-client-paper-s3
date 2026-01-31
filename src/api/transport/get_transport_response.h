@@ -72,10 +72,8 @@ public:
 
     this->setIsValid(true);
 
-    // Parse stopDepartures as a JSON object (e.g., {"bus_24": [...], "bus_83": [...]})
     JsonArray stopDepartures = dataObj["stopDepartures"].as<JsonArray>();
 
-    // Iterate through all keys in stopDepartures (bus_24, bus_83, etc.)
     // Parse each transport time in the array
     for (JsonObject stopDeparture : stopDepartures)
     {
@@ -99,7 +97,7 @@ public:
   int getTransportTimesCount() { return transportTimesCount; }
 
 private:
-  static const int MAX_TRANSPORT_TIMES = 20;
+  static const int MAX_TRANSPORT_TIMES = 50;
   TransportTime transportTimes[MAX_TRANSPORT_TIMES];
   int transportTimesCount = 0;
 };
