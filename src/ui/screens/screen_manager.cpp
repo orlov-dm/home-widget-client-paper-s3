@@ -22,16 +22,27 @@ void ScreenManager::renderCurrentScreen()
 
 void ScreenManager::showScreen(ScreenID screenId)
 {
+    if (screenId == this->currentScreenId)
+    {
+        this->refreshScreen();
+        return; // Already showing this screen
+    }
     if (this->currentScreen)
     {
         this->currentScreen->onExit();
+        // Clear the old screen area before switching
+        M5.Display.fillRect(0, STATUS_BAR_HEIGHT, M5.Display.width(), this->getAvailableHeight(), TFT_WHITE);
+        this->currentScreen = nullptr;
     }
+    this->currentScreenId = ScreenID::NONE;
     auto it = this->screens.find(screenId);
     if (it != this->screens.end())
     {
+        this->currentScreenId = screenId;
         this->currentScreen = it->second.get();
         this->currentScreen->setPosition({0, STATUS_BAR_HEIGHT});
         this->currentScreen->setSize({M5.Display.width(), this->getAvailableHeight()});
+        this->currentScreen->setNeedsRender(); // Force full render when switching screens
         this->currentScreen->onEnter();
     }
 }

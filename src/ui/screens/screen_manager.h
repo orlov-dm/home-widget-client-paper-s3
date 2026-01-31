@@ -51,4 +51,6 @@ private:
 
     std::unique_ptr<StatusBar> statusBar = nullptr;
     std::unique_ptr<NavBar> navBar = nullptr;
+
+    ScreenID currentScreenId = ScreenID::NONE;
 };

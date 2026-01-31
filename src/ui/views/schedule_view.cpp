@@ -141,6 +141,8 @@ void ScheduleView::renderPage()
 void ScheduleView::resetPagination()
 {
     this->currentPage = 0;
+    this->buttonNextPage->setNeedsRender();
+    this->buttonPrevPage->setNeedsRender();
     if (this->buttonPrevPage)
     {
         this->buttonPrevPage->setDisabled(true);
