@@ -4,6 +4,13 @@
 
 #include "../types.h"
 
+enum Alignment
+{
+    LEFT,
+    CENTER,
+    RIGHT
+};
+
 class Component
 {
 public:
@@ -115,6 +122,24 @@ public:
         setNeedsRender();
     }
 
+    Alignment getAlignment() const { return this->alignment; }
+    void setAlignment(Alignment alignment)
+    {
+        if (this->alignment == alignment)
+            return;
+        this->alignment = alignment;
+        setNeedsRender();
+    }
+
+    bool isCenterAligned() const { return this->isCenterAlignedValue; }
+    void setCenterAlignment(bool centerAligned)
+    {
+        if (this->isCenterAlignedValue == centerAligned)
+            return;
+        this->isCenterAlignedValue = centerAligned;
+        setNeedsRender();
+    }
+
 protected:
     virtual void doRender() = 0;
     void init();
@@ -140,4 +165,7 @@ private:
     String name = "";
 
     bool isDisabledValue = false;
+    bool isCenterAlignedValue = false;
+
+    Alignment alignment = Alignment::LEFT;
 };

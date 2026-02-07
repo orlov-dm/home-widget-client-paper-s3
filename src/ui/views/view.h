@@ -122,8 +122,37 @@ public:
             auto &child = children[i];
             if (child == nullptr || !child->isVisible())
                 continue;
-            child->setPosition({currentX, currentY});
+
             auto childSize = child.get()->getSize();
+            if (child->getAlignment() == Alignment::CENTER)
+            {
+                if (direction == LayoutDirection::Vertical)
+                {
+                    int32_t centeredX = position.x + padding + (size.w - padding * 2 - childSize.w) / 2;
+                    child->setPosition({centeredX, currentY});
+                }
+                else
+                {
+                    int32_t centeredY = position.y + padding + (size.h - padding * 2 - childSize.h) / 2;
+                    child->setPosition({currentX, centeredY});
+                }
+            } else if (child->getAlignment() == Alignment::RIGHT)
+            {
+                if (direction == LayoutDirection::Vertical)
+                {
+                    int32_t rightAlignedX = position.x + size.w - padding - childSize.w;
+                    child->setPosition({rightAlignedX, currentY});
+                }
+                else
+                {
+                    int32_t rightAlignedY = position.y + size.h - padding - childSize.h;
+                    child->setPosition({currentX, rightAlignedY});
+                }
+            }
+            else
+            {
+                child->setPosition({currentX, currentY});
+            }
 
             // If parent needs full render, force render all children. Otherwise only render those that need it
             if (viewNeedsFullRender)

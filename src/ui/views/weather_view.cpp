@@ -25,7 +25,7 @@ void WeatherView::setWeatherData(WeatherData *current, WeatherData *soon, Weathe
 
     this->addChild(std::move(currentSection));
     auto bottomRow = std::make_unique<View>(
-        Size{0, this->getSize().h / 3}, LayoutDirection::Horizontal);
+        Size{0, this->getSize().h / 4}, LayoutDirection::Horizontal);
     bottomRow->setSpacing(10);
     bottomRow->setSeparatorSize({2, 0});
     bottomRow->addChild(std::move(soonSection));

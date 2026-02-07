@@ -25,21 +25,22 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
     if (weatherData->dataType == WeatherDataType::CURRENT)
     {
         auto weatherIcon = std::make_unique<Icon>(weatherIconName, IconSize::ICON_SIZE_256);
+        weatherIcon->setAlignment(Alignment::CENTER);
         this->weatherIcon = weatherIcon.get();
 
         auto temperatureLabel = std::make_unique<Label>(WeatherSection::temperatureToString(weatherData->temperature), Size{0, 0}, TextSize::XLARGE);
-        temperatureLabel->setAlignment(Alignment::CENTER);
+        temperatureLabel->setTextAlignment(TextAlignment::TA_CENTER);
         this->temperatureLabel = temperatureLabel.get();
 
         auto descriptionLabel = std::make_unique<Label>(WeatherSection::weatherCodeToDescription(weatherData->weatherCode), Size{0, 0}, TextSize::LARGE);
-        descriptionLabel->setAlignment(Alignment::CENTER);
+        descriptionLabel->setTextAlignment(TextAlignment::TA_CENTER);
         this->descriptionLabel = descriptionLabel.get();
 
         auto feelsLikeLabel = std::make_unique<Label>("Feels like", Size{0, 0}, TextSize::MEDIUM);
-        feelsLikeLabel->setAlignment(Alignment::CENTER);
+        feelsLikeLabel->setTextAlignment(TextAlignment::TA_CENTER);
         this->feelsLikeLabel = feelsLikeLabel.get();
         auto feelsLikeValue = std::make_unique<Label>(WeatherSection::temperatureToString(weatherData->apparentTemperature), Size{0, 0}, TextSize::LARGE);
-        feelsLikeValue->setAlignment(Alignment::CENTER);
+        feelsLikeValue->setTextAlignment(TextAlignment::TA_CENTER);
         this->feelsLikeValue = feelsLikeValue.get();
 
         auto feelsLikeContainer = std::make_unique<View>(Size{0, 0}, LayoutDirection::Horizontal);
@@ -50,7 +51,7 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
         String uvInfo = "UV Index " + String(weatherData->uvIndexValue) + " (" + weatherData->uvIndexDescription + ")";
         String windInfo = "Wind " + String(weatherData->windSpeed) + " km/h " + weatherData->windDirection;
         auto extraLabel = std::make_unique<Label>(uvInfo + "|" + windInfo, Size{0, 0}, TextSize::SMALL);
-        extraLabel->setAlignment(Alignment::CENTER);
+        extraLabel->setTextAlignment(TextAlignment::TA_CENTER);
         this->extraLabel = extraLabel.get();
 
         iconContainer->addChild(std::move(weatherIcon));
@@ -63,14 +64,15 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
     else if (weatherData->dataType == WeatherDataType::SOON)
     {
         auto weatherIcon = std::make_unique<Icon>(weatherIconName, IconSize::ICON_SIZE_128);
+        weatherIcon->setAlignment(Alignment::CENTER);
         this->weatherIcon = weatherIcon.get();
 
         auto weatherDescriptionLabel = std::make_unique<Label>("In 4 hours", Size{0, 0}, TextSize::MEDIUM);
-        weatherDescriptionLabel->setAlignment(Alignment::CENTER);
+        weatherDescriptionLabel->setTextAlignment(TextAlignment::TA_CENTER);
         this->weatherDescriptionLabel = weatherDescriptionLabel.get();
 
         auto temperatureLabel = std::make_unique<Label>(WeatherSection::temperatureToString(weatherData->temperature), Size{0, 0}, TextSize::LARGE);
-        temperatureLabel->setAlignment(Alignment::CENTER);
+        temperatureLabel->setTextAlignment(TextAlignment::TA_CENTER);
         this->temperatureLabel = temperatureLabel.get();
 
         iconContainer->addChild(std::move(weatherIcon));
@@ -81,16 +83,17 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
     else if (weatherData->dataType == WeatherDataType::TOMORROW)
     {
         auto weatherIcon = std::make_unique<Icon>(weatherIconName, IconSize::ICON_SIZE_128);
+        weatherIcon->setAlignment(Alignment::CENTER);
         this->weatherIcon = weatherIcon.get();
 
         auto weatherDescriptionLabel = std::make_unique<Label>("Tomorrow", Size{0, 0}, TextSize::MEDIUM);
-        weatherDescriptionLabel->setAlignment(Alignment::CENTER);
+        weatherDescriptionLabel->setTextAlignment(TextAlignment::TA_CENTER);
         this->weatherDescriptionLabel = weatherDescriptionLabel.get();
 
         String minTemperature = WeatherSection::temperatureToString(weatherData->temperatureMin);
         String maxTemperature = WeatherSection::temperatureToString(weatherData->temperatureMax);
         auto temperatureLabel = std::make_unique<Label>(minTemperature + "/" + maxTemperature, Size{0, 0}, TextSize::LARGE);
-        temperatureLabel->setAlignment(Alignment::CENTER);
+        temperatureLabel->setTextAlignment(TextAlignment::TA_CENTER);
         this->temperatureLabel = temperatureLabel.get();
 
         iconContainer->addChild(std::move(weatherIcon));

@@ -12,11 +12,11 @@ enum TextSize
     XLARGE = 7
 };
 
-enum Alignment
+enum TextAlignment
 {
-    LEFT,
-    CENTER,
-    RIGHT
+    TA_LEFT,
+    TA_CENTER,
+    TA_RIGHT
 };
 
 class Label : public Component
@@ -36,7 +36,7 @@ public:
         this->value = newValue;
         this->setNeedsRender();
     }
-    void setAlignment(Alignment align)
+    void setTextAlignment(TextAlignment align)
     {
         if (this->alignment == align)
             return;
@@ -52,5 +52,5 @@ protected:
 private:
     String value;
     TextSize textSize = TextSize::SMALL;
-    Alignment alignment = Alignment::LEFT;
+    TextAlignment alignment = TextAlignment::TA_LEFT;
 };
