@@ -46,6 +46,9 @@ public:
 
     void doRender() override;
 
+protected:
+    void init();
+
 private:
     String value;
     TextSize textSize = TextSize::SMALL;

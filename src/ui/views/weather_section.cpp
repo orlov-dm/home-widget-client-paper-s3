@@ -19,10 +19,12 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
 
     const auto &size = this->getSize();
 
-    auto iconContainer = std::make_unique<View>(Size{0, size.h / 2});
+    auto iconContainer = std::make_unique<View>(Size{0, 0}, LayoutDirection::Vertical);
+    iconContainer->setName("IconContainer");
+    auto weatherIconName = WeatherSection::weatherCodeToIconName(weatherData->weatherCode);
     if (weatherData->dataType == WeatherDataType::CURRENT)
     {
-        auto weatherIcon = std::make_unique<Icon>(WeatherSection::weatherCodeToIconName(weatherData->weatherCode), IconSize::ICON_SIZE_256);
+        auto weatherIcon = std::make_unique<Icon>(weatherIconName, IconSize::ICON_SIZE_256);
         this->weatherIcon = weatherIcon.get();
 
         auto temperatureLabel = std::make_unique<Label>(WeatherSection::temperatureToString(weatherData->temperature), Size{0, 0}, TextSize::XLARGE);
@@ -60,7 +62,7 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
     }
     else if (weatherData->dataType == WeatherDataType::SOON)
     {
-        auto weatherIcon = std::make_unique<Icon>(WeatherSection::weatherCodeToIconName(weatherData->weatherCode), IconSize::ICON_SIZE_128);
+        auto weatherIcon = std::make_unique<Icon>(weatherIconName, IconSize::ICON_SIZE_128);
         this->weatherIcon = weatherIcon.get();
 
         auto weatherDescriptionLabel = std::make_unique<Label>("In 4 hours", Size{0, 0}, TextSize::MEDIUM);
@@ -78,7 +80,7 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
     }
     else if (weatherData->dataType == WeatherDataType::TOMORROW)
     {
-        auto weatherIcon = std::make_unique<Icon>(WeatherSection::weatherCodeToIconName(weatherData->weatherCode), IconSize::ICON_SIZE_128);
+        auto weatherIcon = std::make_unique<Icon>(weatherIconName, IconSize::ICON_SIZE_128);
         this->weatherIcon = weatherIcon.get();
 
         auto weatherDescriptionLabel = std::make_unique<Label>("Tomorrow", Size{0, 0}, TextSize::MEDIUM);

@@ -104,6 +104,8 @@ public:
     bool needsRenderCheck() const { return !this->isRendered || this->hasChildThatNeedsRender; }
     bool getIsRendered() const { return this->isRendered; }
 
+    virtual Size calculateMinimumSize() const { return this->size; }
+
     bool isDisabled() const { return this->isDisabledValue; }
     void setDisabled(bool disabled)
     {

@@ -49,6 +49,11 @@ void Component::init()
 
 void Component::render(bool force)
 {
+    // for debug draw border
+    // const auto &position = this->getPosition();
+    // const auto &size = this->getSize();
+    // M5.Display.drawRect(position.x, position.y, size.w, size.h, TFT_BLACK);
+
     const auto needsRender = this->needsRenderCheck() || force;
     if (!needsRender)
         return;

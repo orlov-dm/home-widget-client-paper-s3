@@ -97,10 +97,22 @@ public:
 
         bool viewNeedsFullRender = !this->getIsRendered();
 
+        // Calculate minimum size from children before normalizing
+        // This ensures nested Views with auto-size calculate their minimums first
+        if (this->hasAutoWidth() || this->hasAutoHeight())
+        {
+            Size minSize = this->calculateMinimumSize();
+            if (this->hasAutoWidth())
+                this->setWidth(minSize.w);
+            if (this->hasAutoHeight())
+                this->setHeight(minSize.h);
+        }
+
         // Only clear background if THIS view needs rendering, not just children
         if (viewNeedsFullRender)
         {
             Serial.println("Rendering View: " + this->getName() + " (" + this->getId() + ")");
+            Serial.println("Size: " + String(size.w) + "x" + String(size.h) + ", Position: (" + String(position.x) + "," + String(position.y) + ")");
             M5.Display.fillRect(position.x, position.y, size.w, size.h, this->backgroundColor);
         }
 
@@ -138,70 +150,146 @@ public:
     virtual void onExit() {}
     virtual void onRefresh() {}
 
+    Size calculateMinimumSize() const override
+    {
+        if (children.empty())
+            return this->getSize();
+
+        int32_t totalMainAxisSize = 0;
+        int32_t maxCrossAxisSize = 0;
+        int32_t visibleChildCount = 0;
+
+        for (const auto &child : children)
+        {
+            if (!child || !child->isVisible())
+                continue;
+
+            // Recursive call - works for both View and Component children
+            // For nested Views with auto-size, this will calculate their size from their children
+            Size childMin = child->calculateMinimumSize();
+            visibleChildCount++;
+
+            if (this->direction == LayoutDirection::Vertical)
+            {
+                totalMainAxisSize += childMin.h;
+                if (childMin.w > maxCrossAxisSize)
+                    maxCrossAxisSize = childMin.w;
+            }
+            else
+            {
+                totalMainAxisSize += childMin.w;
+                if (childMin.h > maxCrossAxisSize)
+                    maxCrossAxisSize = childMin.h;
+            }
+        }
+
+        int32_t effectiveSpacing = this->getEffectiveSpacing();
+        int32_t spacingTotal = visibleChildCount > 1 ? effectiveSpacing * (visibleChildCount - 1) : 0;
+
+        Size minSize = this->getSize();
+
+        if (this->direction == LayoutDirection::Vertical)
+        {
+            if (this->hasAutoHeight())
+                minSize.h = totalMainAxisSize + spacingTotal + (this->padding * 2);
+            if (this->hasAutoWidth())
+                minSize.w = maxCrossAxisSize + (this->padding * 2);
+        }
+        else
+        {
+            if (this->hasAutoWidth())
+                minSize.w = totalMainAxisSize + spacingTotal + (this->padding * 2);
+            if (this->hasAutoHeight())
+                minSize.h = maxCrossAxisSize + (this->padding * 2);
+        }
+
+        return minSize;
+    }
+
 protected:
     void normalizeAllChildrenSizes()
     {
         if (this->direction == LayoutDirection::Vertical)
         {
             int32_t totalFixedHeight = 0;
+            int32_t totalAutoMinHeight = 0;
             int32_t numAutoHeightChildren = 0;
             for (auto &child : children)
             {
                 if (child == nullptr || !child->isVisible())
                     continue;
-                auto childSize = child->getSize();
                 if (child->hasAutoHeight())
                 {
                     numAutoHeightChildren++;
+                    Size childMin = child->calculateMinimumSize();
+                    totalAutoMinHeight += childMin.h;
                 }
                 else
                 {
-                    totalFixedHeight += childSize.h;
+                    totalFixedHeight += child->getSize().h;
                 }
             }
             int32_t effectiveSpacing = this->getEffectiveSpacing();
-            int32_t availableHeight = this->getSize().h - (this->padding * 2) - (effectiveSpacing * (children.size() - 1)) - totalFixedHeight;
-            int32_t autoHeight = numAutoHeightChildren > 0 ? availableHeight / numAutoHeightChildren : 0;
+            int32_t availableHeight = this->getSize().h - (this->padding * 2) - (effectiveSpacing * (children.size() - 1)) - totalFixedHeight - totalAutoMinHeight;
+            int32_t extraPerAutoChild = numAutoHeightChildren > 0 ? max((int32_t)0, availableHeight) / numAutoHeightChildren : 0;
 
             for (auto &child : children)
             {
                 if (child == nullptr || !child->isVisible())
                     continue;
-                auto childSize = child->getSize();
-                auto childHeight = child->hasAutoHeight() ? autoHeight : childSize.h;
-                auto childWidth = child->hasAutoWidth() ? this->getSize().w - (this->padding * 2) : childSize.w;
+                int32_t childHeight;
+                if (child->hasAutoHeight())
+                {
+                    Size childMin = child->calculateMinimumSize();
+                    childHeight = childMin.h + extraPerAutoChild;
+                }
+                else
+                {
+                    childHeight = child->getSize().h;
+                }
+                auto childWidth = child->hasAutoWidth() ? this->getSize().w - (this->padding * 2) : child->getSize().w;
                 child->setSize({childWidth, childHeight});
             }
         }
         else
         {
             int32_t totalFixedWidth = 0;
+            int32_t totalAutoMinWidth = 0;
             int32_t numAutoWidthChildren = 0;
             for (auto &child : children)
             {
                 if (child == nullptr || !child->isVisible())
                     continue;
-                auto childSize = child->getSize();
                 if (child->hasAutoWidth())
                 {
                     numAutoWidthChildren++;
+                    Size childMin = child->calculateMinimumSize();
+                    totalAutoMinWidth += childMin.w;
                 }
                 else
                 {
-                    totalFixedWidth += childSize.w;
+                    totalFixedWidth += child->getSize().w;
                 }
             }
             int32_t effectiveSpacing = this->getEffectiveSpacing();
-            int32_t availableWidth = this->getSize().w - (this->padding * 2) - (effectiveSpacing * (children.size() - 1)) - totalFixedWidth;
-            int32_t autoWidth = numAutoWidthChildren > 0 ? availableWidth / numAutoWidthChildren : 0;
+            int32_t availableWidth = this->getSize().w - (this->padding * 2) - (effectiveSpacing * (children.size() - 1)) - totalFixedWidth - totalAutoMinWidth;
+            int32_t extraPerAutoChild = numAutoWidthChildren > 0 ? max((int32_t)0, availableWidth) / numAutoWidthChildren : 0;
 
             for (auto &child : children)
             {
                 if (child == nullptr || !child->isVisible())
                     continue;
-                auto childSize = child->getSize();
-                auto childWidth = child->hasAutoWidth() ? autoWidth : childSize.w;
-                auto childHeight = child->hasAutoHeight() ? this->getSize().h - (this->padding * 2) : childSize.h;
+                int32_t childWidth;
+                if (child->hasAutoWidth())
+                {
+                    Size childMin = child->calculateMinimumSize();
+                    childWidth = childMin.w + extraPerAutoChild;
+                }
+                else
+                {
+                    childWidth = child->getSize().w;
+                }
+                auto childHeight = child->hasAutoHeight() ? this->getSize().h - (this->padding * 2) : child->getSize().h;
                 child->setSize({childWidth, childHeight});
             }
         }

@@ -2,6 +2,17 @@
 
 #include <M5Unified.h>
 
+void Label::init()
+{
+    Component::init();
+    if (this->getSize().h == 0)
+    {
+        // Set default height based on text size (each text size increases font height by ~8 pixels)
+        int defaultHeight = 8 * this->textSize + 10; // Add some padding
+        this->setHeight(defaultHeight);
+    }
+}
+
 void Label::doRender()
 {
     auto pos = this->getPosition();
