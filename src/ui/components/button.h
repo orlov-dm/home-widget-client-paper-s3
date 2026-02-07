@@ -8,8 +8,8 @@
 class Button : public Component
 {
 public:
-    Button(const String &label, const Size &size, const String &id, Icon icon = ICON_NONE) : Component(size, id), label(label), icon(icon) { this->init(); };
-    Button(const String &label, const String &id, Icon icon = ICON_NONE) : Component(id), label(label), icon(icon) { this->init(); };
+    Button(const String &label, const Size &size, const String &id, IconName icon = ICON_NONE) : Component(size, id), label(label), icon(icon) { this->init(); };
+    Button(const String &label, const String &id, IconName icon = ICON_NONE) : Component(id), label(label), icon(icon) { this->init(); };
     Button(const String &label, const String &id) : Component(id), label(label) { this->init(); };
     Button(const String &label) : Component(), label(label) { this->init(); };
     virtual ~Button() { this->destroy(); };
@@ -19,7 +19,7 @@ public:
     void setPressed(bool isPressed);
     bool isPressed() const { return this->isPressedState; }
 
-    void setIcon(Icon newIcon)
+    void setIcon(IconName newIcon)
     {
         if (this->icon == newIcon)
             return;
@@ -46,7 +46,7 @@ protected:
 private:
     String label;
     bool isPressedState = false;
-    Icon icon = ICON_NONE;
+    IconName icon = ICON_NONE;
 
     std::function<void()> touchCallback;
     std::function<void()> releaseCallback;

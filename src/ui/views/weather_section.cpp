@@ -3,6 +3,8 @@
 #include <cmath>
 #include <memory>
 
+#include "../../icons/index.h"
+
 WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : View(id)
 {
     this->setSpacing(40);
@@ -15,21 +17,26 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
         return;
     }
 
+    const auto &size = this->getSize();
+
+    auto iconContainer = std::make_unique<View>(Size{0, size.h / 2});
     if (weatherData->dataType == WeatherDataType::CURRENT)
     {
-        // this->weatherIcon = new Icon("weather_icon", Position{0, 0}, Size{50, 50}, IconType::WEATHER, weatherData->weatherCode); // TODO: Implement weather icons
-        auto temperatureLabel = std::make_unique<Label>(this->temperatureToString(weatherData->temperature), Size{0, 0}, TextSize::XLARGE);
+        auto weatherIcon = std::make_unique<Icon>(WeatherSection::weatherCodeToIconName(weatherData->weatherCode), IconSize::ICON_SIZE_256);
+        this->weatherIcon = weatherIcon.get();
+
+        auto temperatureLabel = std::make_unique<Label>(WeatherSection::temperatureToString(weatherData->temperature), Size{0, 0}, TextSize::XLARGE);
         temperatureLabel->setAlignment(Alignment::CENTER);
         this->temperatureLabel = temperatureLabel.get();
 
-        auto descriptionLabel = std::make_unique<Label>(this->weatherCodeToDescription(weatherData->weatherCode), Size{0, 0}, TextSize::LARGE);
+        auto descriptionLabel = std::make_unique<Label>(WeatherSection::weatherCodeToDescription(weatherData->weatherCode), Size{0, 0}, TextSize::LARGE);
         descriptionLabel->setAlignment(Alignment::CENTER);
         this->descriptionLabel = descriptionLabel.get();
 
         auto feelsLikeLabel = std::make_unique<Label>("Feels like", Size{0, 0}, TextSize::MEDIUM);
         feelsLikeLabel->setAlignment(Alignment::CENTER);
         this->feelsLikeLabel = feelsLikeLabel.get();
-        auto feelsLikeValue = std::make_unique<Label>(this->temperatureToString(weatherData->apparentTemperature), Size{0, 0}, TextSize::LARGE);
+        auto feelsLikeValue = std::make_unique<Label>(WeatherSection::temperatureToString(weatherData->apparentTemperature), Size{0, 0}, TextSize::LARGE);
         feelsLikeValue->setAlignment(Alignment::CENTER);
         this->feelsLikeValue = feelsLikeValue.get();
 
@@ -44,6 +51,8 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
         extraLabel->setAlignment(Alignment::CENTER);
         this->extraLabel = extraLabel.get();
 
+        iconContainer->addChild(std::move(weatherIcon));
+        this->addChild(std::move(iconContainer));
         this->addChild(std::move(temperatureLabel));
         this->addChild(std::move(descriptionLabel));
         this->addChild(std::move(feelsLikeContainer));
@@ -51,31 +60,39 @@ WeatherSection::WeatherSection(const String &id, WeatherData *weatherData) : Vie
     }
     else if (weatherData->dataType == WeatherDataType::SOON)
     {
+        auto weatherIcon = std::make_unique<Icon>(WeatherSection::weatherCodeToIconName(weatherData->weatherCode), IconSize::ICON_SIZE_128);
+        this->weatherIcon = weatherIcon.get();
+
         auto weatherDescriptionLabel = std::make_unique<Label>("In 4 hours", Size{0, 0}, TextSize::MEDIUM);
         weatherDescriptionLabel->setAlignment(Alignment::CENTER);
         this->weatherDescriptionLabel = weatherDescriptionLabel.get();
 
-        // this->weatherIcon = new Icon("weather_icon_soon", Position{0, 0}, Size{50, 50}, IconType::WEATHER, weatherData->weatherCode); // TODO: Implement weather icons
-        auto temperatureLabel = std::make_unique<Label>(this->temperatureToString(weatherData->temperature), Size{0, 0}, TextSize::LARGE);
+        auto temperatureLabel = std::make_unique<Label>(WeatherSection::temperatureToString(weatherData->temperature), Size{0, 0}, TextSize::LARGE);
         temperatureLabel->setAlignment(Alignment::CENTER);
         this->temperatureLabel = temperatureLabel.get();
 
+        iconContainer->addChild(std::move(weatherIcon));
+        this->addChild(std::move(iconContainer));
         this->addChild(std::move(weatherDescriptionLabel));
         this->addChild(std::move(temperatureLabel));
     }
     else if (weatherData->dataType == WeatherDataType::TOMORROW)
     {
-        // this->weatherIcon = new Icon("weather_icon_tomorrow", Position{0, 0}, Size{50, 50}, IconType::WEATHER, weatherData->weatherCode); // TODO: Implement weather icons
+        auto weatherIcon = std::make_unique<Icon>(WeatherSection::weatherCodeToIconName(weatherData->weatherCode), IconSize::ICON_SIZE_128);
+        this->weatherIcon = weatherIcon.get();
+
         auto weatherDescriptionLabel = std::make_unique<Label>("Tomorrow", Size{0, 0}, TextSize::MEDIUM);
         weatherDescriptionLabel->setAlignment(Alignment::CENTER);
         this->weatherDescriptionLabel = weatherDescriptionLabel.get();
 
-        String minTemperature = this->temperatureToString(weatherData->temperatureMin);
-        String maxTemperature = this->temperatureToString(weatherData->temperatureMax);
+        String minTemperature = WeatherSection::temperatureToString(weatherData->temperatureMin);
+        String maxTemperature = WeatherSection::temperatureToString(weatherData->temperatureMax);
         auto temperatureLabel = std::make_unique<Label>(minTemperature + "/" + maxTemperature, Size{0, 0}, TextSize::LARGE);
         temperatureLabel->setAlignment(Alignment::CENTER);
         this->temperatureLabel = temperatureLabel.get();
 
+        iconContainer->addChild(std::move(weatherIcon));
+        this->addChild(std::move(iconContainer));
         this->addChild(std::move(weatherDescriptionLabel));
         this->addChild(std::move(temperatureLabel));
     }
@@ -103,4 +120,22 @@ String WeatherSection::temperatureToString(float temperature)
 {
     return String(
         static_cast<int>(std::round(temperature)));
+}
+
+IconName WeatherSection::weatherCodeToIconName(const String &code)
+{
+    if (code == WeatherCodeSimplified::CLEAR)
+        return IconName::ICON_WEATHER_SUN;
+    else if (code == WeatherCodeSimplified::PARTLY_CLOUDY)
+        return IconName::ICON_WEATHER_PARTLY_CLOUDY;
+    else if (code == WeatherCodeSimplified::CLOUDY)
+        return IconName::ICON_WEATHER_CLOUDY;
+    else if (code == WeatherCodeSimplified::RAIN)
+        return IconName::ICON_WEATHER_RAIN;
+    else if (code == WeatherCodeSimplified::THUNDERSTORM)
+        return IconName::ICON_WEATHER_THUNDERSTORM;
+    else if (code == WeatherCodeSimplified::SNOW)
+        return IconName::ICON_WEATHER_SNOW;
+    else
+        return IconName::ICON_NONE;
 }

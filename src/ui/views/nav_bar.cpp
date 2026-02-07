@@ -12,7 +12,7 @@ NavBar::NavBar(const String &id) : View(id, LayoutDirection::Horizontal)
 
     auto scheduleViewBtn = std::make_unique<Button>("");
     scheduleViewBtn->setName("ScheduleViewButton");
-    scheduleViewBtn->setIcon(Icon::ICON_BUS);
+    scheduleViewBtn->setIcon(IconName::ICON_BUS);
     scheduleViewBtn->onTouch([]()
                              {
                                  Serial.println("NavBar: Schedule View button pressed");
@@ -20,7 +20,7 @@ NavBar::NavBar(const String &id) : View(id, LayoutDirection::Horizontal)
 
     auto weatherViewBtn = std::make_unique<Button>("");
     weatherViewBtn->setName("WeatherViewButton");
-    weatherViewBtn->setIcon(Icon::ICON_WEATHER_MAIN);
+    weatherViewBtn->setIcon(IconName::ICON_WEATHER_MAIN);
     weatherViewBtn->onTouch([]()
                             {
                                 Serial.println("NavBar: Weather View button pressed");
