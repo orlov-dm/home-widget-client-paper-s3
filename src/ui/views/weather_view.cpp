@@ -1,5 +1,6 @@
 #include "weather_view.h"
 #include "weather_section.h"
+#include "../../utils/debug.h"
 
 WeatherView::WeatherView(const String &id) : View(id)
 {
@@ -14,10 +15,10 @@ void WeatherView::setWeatherData(WeatherData *current, WeatherData *soon, Weathe
     this->soonData = *soon;
     this->tomorrowData = *tomorrow;
 
-    Serial.println("Weather data updated in WeatherView");
-    Serial.println("Current Temperature: " + String(current->temperature));
-    Serial.println("Soon Temperature: " + String(soon->temperature));
-    Serial.println("Tomorrow Min Temperature: " + String(tomorrow->temperatureMin));
+    DEBUG_PRINTLN("Weather data updated in WeatherView");
+    DEBUG_PRINTLN("Current Temperature: " + String(current->temperature));
+    DEBUG_PRINTLN("Soon Temperature: " + String(soon->temperature));
+    DEBUG_PRINTLN("Tomorrow Min Temperature: " + String(tomorrow->temperatureMin));
 
     auto currentSection = std::make_unique<WeatherSection>("current_weather_section", &this->currentData);
     auto soonSection = std::make_unique<WeatherSection>("soon_weather_section", &this->soonData);

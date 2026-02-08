@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../base_response.h"
+#include "../../utils/debug.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
@@ -87,8 +88,8 @@ public:
 
         if (error)
         {
-            Serial.print("JSON parsing failed: ");
-            Serial.println(error.c_str());
+            DEBUG_PRINT("JSON parsing failed: ");
+            DEBUG_PRINTLN(error.c_str());
             this->setErrorDescription(error.c_str());
             this->setIsValid(false);
             this->setIsSuccessValue(false);
@@ -98,7 +99,7 @@ public:
         bool success = doc["success"] | false;
         if (!success)
         {
-            Serial.println("API indicates failure");
+            DEBUG_PRINTLN("API indicates failure");
             this->setErrorDescription("API indicated failure");
             this->setIsSuccessValue(false);
             return;
@@ -108,7 +109,7 @@ public:
         // Check if data exists
         if (!doc["data"].is<JsonObject>())
         {
-            Serial.println("JSON missing data object");
+            DEBUG_PRINTLN("JSON missing data object");
             this->setIsValid(false);
             this->setErrorDescription("Missing data object");
             return;
@@ -118,7 +119,7 @@ public:
 
         if (success && dataObj["current"].isNull())
         {
-            Serial.println("No data, but API indicates success, this could be valid");
+            DEBUG_PRINTLN("No data, but API indicates success, this could be valid");
             this->setIsValid(false);
             this->setErrorDescription("Missing current weather data");
             return;
@@ -127,7 +128,7 @@ public:
         // Check if current exists and is an object
         if (!dataObj["current"].is<JsonObject>())
         {
-            Serial.println("JSON missing current object");
+            DEBUG_PRINTLN("JSON missing current object");
             this->setIsValid(false);
             this->setErrorDescription("Missing current object");
             return;

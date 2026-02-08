@@ -5,6 +5,7 @@
 
 #include "../std/string_hash.h"
 #include "../ui/components/component.h"
+#include "../utils/debug.h"
 
 class ComponentManager
 {
@@ -42,15 +43,15 @@ private:
 template <typename T>
 T *ComponentManager::findComponentById(const String &id)
 {
-    Serial.printf("Finding component with ID: %s\n", id.c_str());
+    DEBUG_PRINTF("Finding component with ID: %s\n", id.c_str());
     auto it = this->components.find(id);
     if (it != this->components.end())
     {
-        Serial.printf("Component with ID: %s found\n", id.c_str());
+        DEBUG_PRINTF("Component with ID: %s found\n", id.c_str());
         return static_cast<T *>(it->second);
     }
 
-    Serial.printf("Component with ID: %s not found\n", id.c_str());
+    DEBUG_PRINTF("Component with ID: %s not found\n", id.c_str());
     return nullptr;
 }
 

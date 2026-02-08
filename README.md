@@ -1,6 +1,8 @@
-Compile: 
-- arduino-cli.exe compile -b m5stack:esp32:m5stack_papers3
-
+Compile:
+- Dev: 
+  - pio run -e dev --target upload
+- Release:
+  - pio run -e release --target upload
 
 TODO:
 - [ ] Padding (top/left/right/bottom) + (top/bottom) + (left/right)

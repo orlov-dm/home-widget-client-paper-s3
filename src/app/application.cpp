@@ -2,6 +2,7 @@
 
 #include <M5Unified.hpp>
 
+#include "../utils/debug.h"
 #include "../utils/sleep_utils.h"
 #include "../utils/wifi_utils.h"
 #include "../utils/datetime_utils.h"
@@ -23,8 +24,8 @@ const uint32_t AWAKE_DURATION = 120000; // 2 minutes in milliseconds (how long t
 
 void Application::setup()
 {
-    Serial.begin(9600);
-    Serial.println("BOOT");
+    DEBUG_BEGIN(9600);
+    DEBUG_PRINTLN("BOOT");
 
     auto cfg = M5.config();
     M5.begin(cfg);
@@ -98,12 +99,12 @@ void Application::loop()
     if (millis() - wakeupTime >= AWAKE_DURATION)
     {
         bool devMode = isDevMode();
-        Serial.printf("Dev mode check: %s\n", devMode ? "true" : "false");
+        DEBUG_PRINTF("Dev mode check: %s\n", devMode ? "true" : "false");
 
         if (devMode)
         {
-            Serial.println("Development mode detected (USB connected) - skipping deep sleep");
-            Serial.println("Device will stay awake for debugging");
+            DEBUG_PRINTLN("Development mode detected (USB connected) - skipping deep sleep");
+            DEBUG_PRINTLN("Device will stay awake for debugging");
             return;
         }
         else
@@ -138,7 +139,7 @@ void Application::renderUI()
     }
     catch (...)
     {
-        Serial.println("Error during UI rendering");
+        DEBUG_PRINTLN("Error during UI rendering");
     }
     M5.Display.setEpdMode(epd_mode_t::epd_fast);
 }

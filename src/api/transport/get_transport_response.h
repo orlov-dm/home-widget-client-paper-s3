@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../base_response.h"
+#include "../../utils/debug.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
@@ -25,8 +26,8 @@ public:
 
     if (error)
     {
-      Serial.print("JSON parsing failed: ");
-      Serial.println(error.c_str());
+      DEBUG_PRINT("JSON parsing failed: ");
+      DEBUG_PRINTLN(error.c_str());
       this->setErrorDescription(error.c_str());
       this->setIsValid(false);
       this->setIsSuccessValue(false);
@@ -36,7 +37,7 @@ public:
     bool success = doc["success"] | false;
     if (!success)
     {
-      Serial.println("API indicates failure");
+      DEBUG_PRINTLN("API indicates failure");
       this->setErrorDescription("API indicated failure");
       this->setIsSuccessValue(false);
       return;
@@ -46,7 +47,7 @@ public:
     // Check if data exists
     if (!doc["data"].is<JsonObject>())
     {
-      Serial.println("JSON missing data object");
+      DEBUG_PRINTLN("JSON missing data object");
       this->setIsValid(false);
       this->setErrorDescription("Missing data object");
       return;
